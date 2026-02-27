@@ -983,6 +983,20 @@ function buildPersonRow(person) {
 
   const isDone = person.受付 === '済';
 
+  // 体温変更時の自動送信（受付済みの場合のみ、1秒デバウンス）
+  let tempTimer = null;
+  tempInput.addEventListener('change', () => {
+    if (!isDone) return; // 未受付は受付ボタン押下時に一緒に送る
+    if (tempInput.value === '') return; // 空選択は無視
+    clearTimeout(tempTimer);
+    tempInput.style.borderColor = 'var(--accent)'; // 入力中の視覚フィードバック
+    tempTimer = setTimeout(async () => {
+      await saveTempOnly(person.個人ID, person.家族ID, tempInput.value);
+      tempInput.style.borderColor = 'var(--green)'; // 送信完了
+      setTimeout(() => { tempInput.style.borderColor = ''; }, 1500);
+    }, 1000);
+  });
+
   const checkinBtn = document.createElement('button');
   checkinBtn.className = 'checkin-btn';
   if (isDone) {
@@ -1006,6 +1020,28 @@ function buildPersonRow(person) {
 // ============================================================
 //  チェックイン
 // ============================================================
+//  体温のみ保存（受付済み後に体温を入力したケース）
+// ============================================================
+async function saveTempOnly(個人ID, 家族ID, 体温) {
+  const now  = new Date().toISOString();
+  const all  = await idbGetAll(STORE_PARTICIPANTS);
+  const person = all.find(p => p.個人ID === 個人ID);
+  if (!person) return;
+
+  person.体温          = 体温;
+  person.最終更新日時  = now;
+  await idbPut(STORE_PARTICIPANTS, person);
+
+  const update = { 個人ID, value: person.受付, 体温, timestamp: now };
+  if (navigator.onLine && state.gasUrl) {
+    await sendUpdates([update]);
+  } else {
+    await idbPut(STORE_QUEUE, { ...update, queuedAt: now });
+    updateQueueBadge();
+  }
+}
+
+// ============================================================
 async function checkinPerson(個人ID, 家族ID, value, 体温) {
   const now       = new Date().toISOString();
   const statusKey = '受付';
@@ -1024,7 +1060,7 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, value, 体温: 体温 || '', timestamp: now };
+  const update = { 個人ID, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
