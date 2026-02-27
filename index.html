@@ -362,6 +362,15 @@ header {
   -webkit-appearance: none; appearance: none; cursor: pointer;
 }
 .temp-input:focus { border-color: var(--accent); }
+.temp-input.temp-required {
+  border-color: var(--red) !important;
+  background: rgba(255,95,109,0.08);
+  animation: tempPulse 2s ease-in-out infinite;
+}
+@keyframes tempPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,95,109,0); }
+  50%      { box-shadow: 0 0 0 3px rgba(255,95,109,0.3); }
+}
 
 /* ---- 新規追加フォーム ---- */
 .add-form {
@@ -566,6 +575,10 @@ header {
         </select>
         <span class="select-arrow">▼</span>
       </div>
+      <label class="checkbox-label" style="flex-shrink:0; font-size:12px; color:var(--text-sub); white-space:nowrap; cursor:pointer;">
+        <input type="checkbox" id="filter-child-only" style="accent-color:var(--accent); width:14px; height:14px;">
+        利用児童のみ
+      </label>
     </div>
   </div>
 
@@ -619,6 +632,8 @@ let db           = null;
 let isSyncing    = false;
 let qrStream     = null;
 let qrInterval   = null;
+let pollTimer    = null;   // 自動ポーリング用
+let isUserActive = false;  // 体温入力などの操作中フラグ
 
 const state = { gasUrl: '', apiKey: '' };
 
@@ -733,13 +748,15 @@ async function gasPost(body) {
 // ============================================================
 //  データ取得・同期
 // ============================================================
-async function fetchAllData() {
+async function fetchAllData(silent = false) {
   if (!state.gasUrl || !state.apiKey) {
-    showToast('⚙️ 設定からURLとAPIキーを入力してください', 'info');
-    document.getElementById('settings-panel').classList.add('active');
+    if (!silent) {
+      showToast('⚙️ 設定からURLとAPIキーを入力してください', 'info');
+      document.getElementById('settings-panel').classList.add('active');
+    }
     return;
   }
-  showToast('データを取得中…', 'info');
+  if (!silent) showToast('データを取得中…', 'info');
   try {
     const data = await gasGet();
     if (data.error) throw new Error(data.error);
@@ -748,11 +765,11 @@ async function fetchAllData() {
     await setMeta('lastSync', new Date().toISOString());
     updateStats(data.stats);
     await buildOfficeFilter();
-    showToast(data.participants.length + '件取得しました', 'success');
-    // 取得完了後に全員を一覧表示
-    await search();
+    if (!silent) showToast(data.participants.length + '件取得しました', 'success');
+    // 操作中でなければUIも更新
+    if (!isUserActive) await search();
   } catch (e) {
-    showToast('取得失敗: ' + e.message, 'error');
+    if (!silent) showToast('取得失敗: ' + e.message, 'error');
   }
 }
 
@@ -777,16 +794,15 @@ async function buildOfficeFilter() {
 //  検索（核心ロジック）
 // ============================================================
 async function search() {
-  const name   = document.getElementById('search-name').value.trim();
-  const office = document.getElementById('filter-office').value.trim();
+  const name      = document.getElementById('search-name').value.trim();
+  const office    = document.getElementById('filter-office').value.trim();
+  const childOnly = document.getElementById('filter-child-only').checked;
 
   let all = await idbGetAll(STORE_PARTICIPANTS);
-  console.log('[search] total records:', all.length, '| office:', office, '| name:', name);
 
-  if (office) all = all.filter(p => (p.事業所 || '').trim() === office);
-  if (name)   all = all.filter(p => (p.氏名   || '').includes(name));
-
-  console.log('[search] filtered:', all.length);
+  if (office)    all = all.filter(p => (p.事業所 || '').trim() === office);
+  if (name)      all = all.filter(p => (p.氏名   || '').includes(name));
+  if (childOnly) all = all.filter(p => (p.区分   || '') === '利用児童');
 
   // 家族IDでグループ化
   const families = {};
@@ -983,18 +999,29 @@ function buildPersonRow(person) {
 
   const isDone = person.受付 === '済';
 
+  // 受付済み・利用児童・体温未入力 → 赤ハイライト
+  if (isDone && person.区分 === '利用児童' && !person.体温) {
+    tempInput.classList.add('temp-required');
+  }
+
   // 体温変更時の自動送信（受付済みの場合のみ、1秒デバウンス）
   let tempTimer = null;
+  tempInput.addEventListener('focus', () => { isUserActive = true; });
   tempInput.addEventListener('change', () => {
+    isUserActive = true;
     if (!isDone) return; // 未受付は受付ボタン押下時に一緒に送る
-    if (tempInput.value === '') return; // 空選択は無視
+    if (tempInput.value === '') return;
+    tempInput.classList.remove('temp-required'); // 入力されたので赤解除
     clearTimeout(tempTimer);
-    tempInput.style.borderColor = 'var(--accent)'; // 入力中の視覚フィードバック
+    tempInput.style.borderColor = 'var(--accent)';
     tempTimer = setTimeout(async () => {
       await saveTempOnly(person.個人ID, person.家族ID, tempInput.value);
-      tempInput.style.borderColor = 'var(--green)'; // 送信完了
-      setTimeout(() => { tempInput.style.borderColor = ''; }, 1500);
+      tempInput.style.borderColor = 'var(--green)';
+      setTimeout(() => { tempInput.style.borderColor = ''; isUserActive = false; }, 1500);
     }, 1000);
+  });
+  tempInput.addEventListener('blur', () => {
+    setTimeout(() => { isUserActive = false; }, 1500);
   });
 
   const checkinBtn = document.createElement('button');
@@ -1023,13 +1050,13 @@ function buildPersonRow(person) {
 //  体温のみ保存（受付済み後に体温を入力したケース）
 // ============================================================
 async function saveTempOnly(個人ID, 家族ID, 体温) {
-  const now  = new Date().toISOString();
-  const all  = await idbGetAll(STORE_PARTICIPANTS);
+  const now    = new Date().toISOString();
+  const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
   if (!person) return;
 
-  person.体温          = 体温;
-  person.最終更新日時  = now;
+  person.体温         = 体温;
+  person.最終更新日時 = now;
   await idbPut(STORE_PARTICIPANTS, person);
 
   const update = { 個人ID, value: person.受付, 体温, timestamp: now };
@@ -1060,7 +1087,9 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
+  // 受付取消時はシートの体温を空にする（ローカルは保持）
+  const sendTemp = value === '未' ? '' : (体温 || '');
+  const update = { 個人ID, value, 体温: sendTemp, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
@@ -1527,6 +1556,9 @@ function bindEvents() {
   // 事業所プルダウン変更時に即検索
   document.getElementById('filter-office').addEventListener('change', () => { search(); });
 
+  // 利用児童フィルタ
+  document.getElementById('filter-child-only').addEventListener('change', () => { search(); });
+
   // 「全事業所」が選択済みのまま再タップされても検索リフレッシュ
   document.getElementById('filter-office').addEventListener('click', () => {
     const sel = document.getElementById('filter-office');
@@ -1582,6 +1614,18 @@ function bindEvents() {
 // ============================================================
 //  初期化
 // ============================================================
+// ============================================================
+//  自動ポーリング（30秒ごと・操作中スキップ）
+// ============================================================
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(async () => {
+    if (!navigator.onLine || !state.gasUrl || !state.apiKey) return;
+    if (isUserActive) return;
+    await fetchAllData(true);
+  }, 30000);
+}
+
 async function init() {
   db = await openDB();
   await loadSettings();
@@ -1601,6 +1645,7 @@ async function init() {
     // 起動時にすでにデータがあれば全員表示
     await search();
   }
+  startPolling();
 }
 
 init().catch(e => {
