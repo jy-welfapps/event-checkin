@@ -261,6 +261,19 @@ header {
 .qr-corner.bl { bottom: 8px; left: 8px;  border-width: 0 0 3px 3px; }
 .qr-corner.br { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; }
 
+/* スキャンライン */
+.scan-line {
+  position: absolute; left: 8px; right: 8px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan 2s linear infinite;
+  border-radius: 1px;
+}
+@keyframes scan {
+  0%   { top: 10%; opacity: 1; }
+  90%  { top: 85%; opacity: 1; }
+  100% { top: 85%; opacity: 0; }
+}
+
 .qr-hint { color: var(--text-sub); font-size: 13px; text-align: center; }
 
 /* ---- ファミリーカード ---- */
@@ -452,6 +465,7 @@ header {
       <div class="qr-corner tr"></div>
       <div class="qr-corner bl"></div>
       <div class="qr-corner br"></div>
+      <div class="scan-line"></div>
     </div>
   </div>
   <p class="qr-hint">QRコードをカメラに向けてください</p>
@@ -1234,6 +1248,8 @@ async function openCameraView() {
 
   // 制約を段階的に試す（Android対応）
   const constraints = [
+    // 解像度を明示することでAndroidのカメラが安定しやすい
+    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
     { video: { facingMode: { ideal: 'environment' } } },
     { video: { facingMode: 'environment' } },
     { video: true }
@@ -1251,26 +1267,66 @@ async function openCameraView() {
 
   if (!started) {
     view.classList.remove('active');
-    showToast('カメラを起動できませんでした。ブラウザの設定でカメラを許可してください。（' + lastErr + '）', 'error');
+    // 拒否された場合はブラウザ別の解除手順を案内
+    const isIOS     = /iPhone|iPad/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    let guide = '';
+    if (isIOS) {
+      guide = '【iPhone/iPad】
+iOS設定 → Safari → カメラ → 許可
+またはアドレスバー左の「AA」→ Webサイトの設定 → カメラ → 許可';
+    } else if (isAndroid) {
+      guide = '【Android Chrome】
+アドレスバー右の 🔒 → カメラ → 許可
+に変更してページを再読み込みしてください';
+    } else {
+      guide = '【PC Chrome】
+アドレスバー右の 🔒 またはカメラアイコン → カメラを許可
+に変更してページを再読み込みしてください';
+    }
+    alert('カメラへのアクセスが拒否されています。
+
+' + guide);
     return;
   }
 
   const video = document.getElementById('qr-video');
   video.srcObject = qrStream;
+
+  // Androidでautoplayが効かないケースに対応
+  video.setAttribute('playsinline', 'true');
+  video.setAttribute('muted', 'true');
   video.play().catch(() => {});
 
   const canvas = document.createElement('canvas');
-  const ctx    = canvas.getContext('2d');
+  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+
+  let lastResult = '';
+  let cooldown   = false;
 
   qrInterval = setInterval(() => {
     if (video.readyState < video.HAVE_ENOUGH_DATA) return;
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0);
+    if (video.videoWidth === 0 || video.videoHeight === 0) return;
+    if (cooldown) return;
+
+    // jsQRは大きい画像だと遅いので640px上限にリサイズ
+    const scale  = Math.min(1, 640 / video.videoWidth);
+    canvas.width  = Math.floor(video.videoWidth  * scale);
+    canvas.height = Math.floor(video.videoHeight * scale);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
     const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(img.data, img.width, img.height);
-    if (code && code.data) handleFamilyId(code.data.trim());
-  }, 200);
+    const code = jsQR(img.data, img.width, img.height, {
+      inversionAttempts: 'dontInvert' // 処理速度向上
+    });
+
+    if (code && code.data && code.data !== lastResult) {
+      lastResult = code.data;
+      cooldown   = true;
+      setTimeout(() => { cooldown = false; lastResult = ''; }, 2000); // 2秒クールダウン
+      handleFamilyId(code.data.trim());
+    }
+  }, 150); // 150msに短縮（Androidで取りこぼし防止）
 }
 
 function closeCameraView() {
