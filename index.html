@@ -295,6 +295,11 @@ header {
   background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.25);
   border-radius: 4px; padding: 2px 7px; font-family: 'Orbitron', sans-serif;
 }
+.family-seat {
+  font-size: 12px; font-weight: 900; color: var(--accent);
+  background: rgba(240,165,0,0.12); border: 1px solid rgba(240,165,0,0.3);
+  border-radius: 4px; padding: 2px 8px; margin-left: 8px;
+}
 .family-tel {
   font-size: 12px; color: var(--teal); text-decoration: none;
   opacity: 0.85; margin-left: 8px;
@@ -533,26 +538,16 @@ header {
     </div>
     <div class="progress-row">
       <div class="progress-item">
-        <span class="progress-label">🔭 プラネ</span>
+        <span class="progress-label">✅ 受付</span>
         <div class="progress-bar-wrap">
-          <div class="progress-bar" id="plane-bar" style="width:0%"></div>
+          <div class="progress-bar" id="checkin-bar" style="width:0%"></div>
         </div>
-        <span class="progress-num" id="plane-count">0/0</span>
-      </div>
-      <div class="progress-item">
-        <span class="progress-label">🎨 作品展</span>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar" id="art-bar" style="width:0%"></div>
-        </div>
-        <span class="progress-num" id="art-count">0/0</span>
+        <span class="progress-num" id="checkin-count">0/0</span>
       </div>
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-event="plane">🔭 プラネタリウム</button>
-    <button class="tab-btn" data-event="art">🎨 作品展</button>
-  </div>
+  
 
   <div class="search-area">
     <div class="search-row">
@@ -620,7 +615,7 @@ const STORE_QUEUE        = 'syncQueue';
 const STORE_META         = 'meta';
 
 let db           = null;
-let currentEvent = 'plane';
+// イベントタブ廃止：一括受付に統合
 let isSyncing    = false;
 let qrStream     = null;
 let qrInterval   = null;
@@ -896,16 +891,24 @@ function buildFamilyCard(famId, members) {
   badge.textContent = famId;
 
   // 電話番号（家族内の最初の電話番号を使用）
-  const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
+  const tel  = (members.find(m => m.電話番号) || {}).電話番号 || '';
+  // 座席番号（家族内の最初の座席番号を使用）
+  const seat = (members.find(m => m.座席番号) || {}).座席番号 || '';
+
+  header.appendChild(badge);
+
+  if (seat) {
+    const seatEl = document.createElement('span');
+    seatEl.className = 'family-seat';
+    seatEl.textContent = '🪑 ' + seat;
+    header.appendChild(seatEl);
+  }
   if (tel) {
     const telEl = document.createElement('a');
     telEl.className = 'family-tel';
     telEl.href = 'tel:' + tel.replace(/[^\d+]/g, '');
     telEl.textContent = '📞 ' + tel;
-    header.appendChild(badge);
     header.appendChild(telEl);
-  } else {
-    header.appendChild(badge);
   }
 
   const btns = document.createElement('div');
@@ -937,12 +940,7 @@ function buildFamilyCard(famId, members) {
     if (row) section.appendChild(row); // 対象外はnullなのでスキップ
   });
 
-  // 対象者が1人もいない場合はカード自体を非表示
-  const hasTarget = members.some(p => {
-    const key = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
-    return p[key] === '対象';
-  });
-  if (!hasTarget) return null;
+
 
   return section;
 }
@@ -993,13 +991,7 @@ function buildPersonRow(person) {
     tempInput.appendChild(opt);
   }
 
-  const eventKey  = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
-  const isTarget  = person[eventKey]  === '対象';
-  const isDone    = person[statusKey] === '済';
-
-  // 対象外は行ごと非表示（nullを返して呼び出し側でスキップ）
-  if (!isTarget) return null;
+  const isDone = person.受付 === '済';
 
   const checkinBtn = document.createElement('button');
   checkinBtn.className = 'checkin-btn';
@@ -1026,7 +1018,7 @@ function buildPersonRow(person) {
 // ============================================================
 async function checkinPerson(個人ID, 家族ID, value, 体温) {
   const now       = new Date().toISOString();
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付' : '作品展受付';
+  const statusKey = '受付';
 
   const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
@@ -1042,7 +1034,7 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, event: currentEvent, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
+  const update = { 個人ID, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
@@ -1058,16 +1050,14 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
 
 async function checkinAll(famId, members, value) {
   const now       = new Date().toISOString();
-  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
+  const statusKey = '受付';
   const updates   = [];
 
   for (const member of members) {
-    if (member[targetKey] !== '対象') continue;
     member[statusKey]    = value;
     member.最終更新日時 = now;
     await idbPut(STORE_PARTICIPANTS, member);
-    updates.push({ 個人ID: member.個人ID, event: currentEvent, value, timestamp: now });
+    updates.push({ 個人ID: member.個人ID, value, timestamp: now });
   }
 
   if (updates.length === 0) { showToast('対象者がいません', 'info'); return; }
@@ -1151,21 +1141,15 @@ async function updateQueueBadge() {
 // ============================================================
 function updateStats(stats) {
   if (!stats) return;
-  const pT = stats.plane.total || 0, pD = stats.plane.done || 0;
-  const aT = stats.art.total   || 0, aD = stats.art.done   || 0;
-  document.getElementById('plane-count').textContent = pD + '/' + pT;
-  document.getElementById('art-count').textContent   = aD + '/' + aT;
-  document.getElementById('plane-bar').style.width   = (pT ? pD/pT*100 : 0) + '%';
-  document.getElementById('art-bar').style.width     = (aT ? aD/aT*100 : 0) + '%';
+  const total = stats.total || 0;
+  const done  = stats.done  || 0;
+  document.getElementById('checkin-count').textContent = done + '/' + total;
+  document.getElementById('checkin-bar').style.width   = (total ? done/total*100 : 0) + '%';
 }
 
 async function updateLocalStats() {
   const all   = await idbGetAll(STORE_PARTICIPANTS);
-  const stats = { plane: { total:0, done:0 }, art: { total:0, done:0 } };
-  all.forEach(p => {
-    if (p.プラネ鑑賞 === '対象') { stats.plane.total++; if (p.プラネ受付  === '済') stats.plane.done++; }
-    if (p.作品展     === '対象') { stats.art.total++;   if (p.作品展受付  === '済') stats.art.done++;   }
-  });
+  const stats = { total: all.length, done: all.filter(p => p.受付 === '済').length };
   updateStats(stats);
 }
 
@@ -1229,9 +1213,7 @@ function showAddMemberForm(famId, refMember) {
       '<div class="full">' +
         '<div class="form-label">対象イベント</div>' +
         '<div class="checkbox-row">' +
-          '<label class="checkbox-label"><input type="checkbox" id="new-plane" checked> 🔭 プラネタリウム</label>' +
-          '<label class="checkbox-label"><input type="checkbox" id="new-art"   checked> 🎨 作品展</label>' +
-        '</div>' +
+          '</div>' +
       '</div>' +
     '</div>' +
     '<div style="display:flex;gap:8px;">' +
@@ -1253,8 +1235,7 @@ async function submitAddForm() {
   const name  = document.getElementById('new-name').value.trim();
   if (!famId || !pid || !name) { showToast('氏名は必須です', 'error'); return; }
 
-  const planeTarget = document.getElementById('new-plane').checked ? '対象' : '-';
-  const artTarget   = document.getElementById('new-art').checked   ? '対象' : '-';
+
 
   const rec = {
     家族ID: famId, 個人ID: pid, 氏名: name,
@@ -1263,8 +1244,7 @@ async function submitAddForm() {
     事業所:     document.getElementById('new-office').value.trim(),
     電話番号:   document.getElementById('new-tel').value.trim(),
     参加形態:   document.getElementById('new-type').value,
-    プラネ鑑賞: planeTarget, プラネ受付: planeTarget === '対象' ? '未' : '-',
-    作品展:     artTarget,   作品展受付: artTarget   === '対象' ? '未' : '-',
+    受付: '未',
     体温: '', 最終更新日時: new Date().toISOString()
   };
 
@@ -1506,14 +1486,7 @@ function updateOnlineStatus() {
 // ============================================================
 function bindEvents() {
   // タブ切替
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentEvent = btn.dataset.event;
-      search(); // タブ切替時も再描画
-    });
-  });
+  
 
   // 氏名入力：Enterキーまたは入力が止まったら検索
   let searchTimer = null;
