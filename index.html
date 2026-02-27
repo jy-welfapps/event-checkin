@@ -580,8 +580,26 @@ header {
 <div id="toast-area"></div>
 
 <!-- jsQR ライブラリ（CDN） -->
-<!-- jsQR: BarcodeDetector非対応環境のフォールバック用 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
+<!-- jsQR: BarcodeDetector非対応環境のフォールバック用（複数CDNフォールバック） -->
+<script>
+(function() {
+  // CDNを順番に試してjsQRをロード
+  const cdns = [
+    'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js',
+    'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js',
+    'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js'
+  ];
+  let idx = 0;
+  function tryNext() {
+    if (idx >= cdns.length) return;
+    const s = document.createElement('script');
+    s.src = cdns[idx++];
+    s.onerror = tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
+})();
+</script>
 
 <script>
 // ============================================================
@@ -1335,8 +1353,14 @@ iOS設定 → Safari → カメラ → 許可`;
 
   } else {
     // ---- jsQRフォールバック（BarcodeDetector非対応環境用） ----
+    // jsQRのロード完了を最大3秒待つ
+    let waited = 0;
+    while (typeof jsQR === 'undefined' && waited < 3000) {
+      await new Promise(r => setTimeout(r, 200));
+      waited += 200;
+    }
     if (typeof jsQR === 'undefined') {
-      showToast('QR読取ライブラリが利用できません。ページを再読み込みしてください。', 'error');
+      showToast('QR読取ライブラリのロードに失敗しました。ページを再読み込みしてください。', 'error');
       closeCameraView(); return;
     }
 
