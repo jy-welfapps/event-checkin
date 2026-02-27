@@ -890,26 +890,7 @@ function buildFamilyCard(famId, members) {
   badge.className = 'family-id-badge';
   badge.textContent = famId;
 
-  // 電話番号（家族内の最初の電話番号を使用）
-  const tel  = (members.find(m => m.電話番号) || {}).電話番号 || '';
-  // 座席番号（家族内の最初の座席番号を使用）
-  const seat = (members.find(m => m.座席番号) || {}).座席番号 || '';
-
   header.appendChild(badge);
-
-  if (seat) {
-    const seatEl = document.createElement('span');
-    seatEl.className = 'family-seat';
-    seatEl.textContent = '🪑 ' + seat;
-    header.appendChild(seatEl);
-  }
-  if (tel) {
-    const telEl = document.createElement('a');
-    telEl.className = 'family-tel';
-    telEl.href = 'tel:' + tel.replace(/[^\d+]/g, '');
-    telEl.textContent = '📞 ' + tel;
-    header.appendChild(telEl);
-  }
 
   const btns = document.createElement('div');
   btns.className = 'family-checkin-all';
