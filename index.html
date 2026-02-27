@@ -1290,21 +1290,17 @@ iOS設定 → Safari → カメラ → 許可
 
   const video = document.getElementById('qr-video');
   video.srcObject = qrStream;
-
-  // Androidでautoplayが効かないケースに対応
   video.setAttribute('playsinline', 'true');
   video.setAttribute('muted', 'true');
-  video.play().catch(() => {});
 
+  // willReadFrequently: getImageDataを高頻度で呼ぶAndroid向け最適化
   const canvas = document.createElement('canvas');
   const ctx    = canvas.getContext('2d', { willReadFrequently: true });
 
   let lastResult = '';
   let cooldown   = false;
-
-  // setIntervalよりrequestAnimationFrameのほうがAndroidで安定
-  let scanning = true;
-  let lastScan = 0;
+  let scanning   = true;
+  let lastScan   = 0;
 
   function scanFrame(timestamp) {
     if (!scanning) return;
@@ -1314,11 +1310,13 @@ iOS設定 → Safari → カメラ → 許可
     if (timestamp - lastScan < 100) return;
     lastScan = timestamp;
 
-    if (video.readyState < video.HAVE_ENOUGH_DATA) return;
+    // readyState >= 2（HAVE_CURRENT_DATA以上）で処理開始
+    // Androidでは4(HAVE_ENOUGH_DATA)に達しないまま映像が流れることがある
+    if (video.readyState < 2) return;
     if (video.videoWidth === 0 || video.videoHeight === 0) return;
     if (cooldown) return;
 
-    // 解像度を複数段階で試す
+    // 解像度を複数段階で試す（小さい順の方がjsQRが速い）
     const sizes = [320, 480, 640];
     let found = null;
     for (const maxSize of sizes) {
@@ -1339,9 +1337,21 @@ iOS設定 → Safari → カメラ → 許可
     }
   }
 
-  // qrIntervalにstop関数を入れてcloseCameraViewで止められるようにする
   qrInterval = { stop: () => { scanning = false; } };
-  requestAnimationFrame(scanFrame);
+
+  // loadeddataイベント待ち：映像準備完了後にスキャン開始
+  const startScan = () => requestAnimationFrame(scanFrame);
+  video.addEventListener('loadeddata', startScan, { once: true });
+
+  // loadeddataが発火しない場合のフォールバック（500ms後に強制開始）
+  video.play().then(() => {
+    setTimeout(() => {
+      if (scanning && video.readyState >= 2) requestAnimationFrame(scanFrame);
+    }, 500);
+  }).catch(() => {
+    // autoplay失敗でも続行
+    setTimeout(startScan, 500);
+  });
 }
 
 function closeCameraView() {
