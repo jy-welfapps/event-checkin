@@ -580,6 +580,7 @@ header {
 <div id="toast-area"></div>
 
 <!-- jsQR ライブラリ（CDN） -->
+<!-- jsQR: BarcodeDetector非対応環境のフォールバック用 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js"></script>
 
 <script>
@@ -1239,19 +1240,19 @@ async function openCameraView() {
   const view = document.getElementById('camera-view');
   view.classList.add('active');
 
-  // HTTPSまたはlocalhostでないとgetUserMediaは動かない
   if (!location.protocol.startsWith('https') && location.hostname !== 'localhost') {
-    showToast('カメラはHTTPS環境が必要です（GASのURLで開いてください）', 'error');
+    showToast('カメラはHTTPS環境が必要です', 'error');
     closeCameraView();
     return;
   }
 
-  // 制約を段階的に試す（Android対応）
+  // BarcodeDetector API対応チェック
+  const hasBarcodeDetector = 'BarcodeDetector' in window;
+
+  // カメラ起動
   const constraints = [
-    // QR読取には高解像度より適度な解像度のほうがjsQRが処理しやすい
     { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } },
     { video: { facingMode: { ideal: 'environment' } } },
-    { video: { facingMode: 'environment' } },
     { video: true }
   ];
 
@@ -1267,22 +1268,18 @@ async function openCameraView() {
 
   if (!started) {
     view.classList.remove('active');
-    // 拒否された場合はブラウザ別の解除手順を案内
     const isIOS     = /iPhone|iPad/.test(navigator.userAgent);
     const isAndroid = /Android/.test(navigator.userAgent);
     let guide = '';
     if (isIOS) {
       guide = `【iPhone/iPad】
-iOS設定 → Safari → カメラ → 許可
-またはアドレスバー左の「AA」→ Webサイトの設定 → カメラ → 許可`;
+iOS設定 → Safari → カメラ → 許可`;
     } else if (isAndroid) {
       guide = `【Android Chrome】
-アドレスバー右の 🔒 → カメラ → 許可
-に変更してページを再読み込みしてください`;
+アドレスバー右の 🔒 → カメラ → 許可`;
     } else {
       guide = `【PC Chrome】
-アドレスバー右の 🔒 またはカメラアイコン → カメラを許可
-に変更してページを再読み込みしてください`;
+アドレスバー右の 🔒 → カメラを許可`;
     }
     alert('カメラへのアクセスが拒否されています。\n\n' + guide);
     return;
@@ -1293,65 +1290,89 @@ iOS設定 → Safari → カメラ → 許可
   video.setAttribute('playsinline', 'true');
   video.setAttribute('muted', 'true');
 
-  // willReadFrequently: getImageDataを高頻度で呼ぶAndroid向け最適化
-  const canvas = document.createElement('canvas');
-  const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+  let scanning = true;
+  qrInterval = { stop: () => { scanning = false; } };
 
-  let lastResult = '';
-  let cooldown   = false;
-  let scanning   = true;
-  let lastScan   = 0;
+  if (hasBarcodeDetector) {
+    // ---- BarcodeDetector API（Android Chrome推奨） ----
+    let detector;
+    try {
+      detector = new BarcodeDetector({ formats: ['qr_code'] });
+    } catch(e) {
+      showToast('BarcodeDetector初期化失敗: ' + e.message, 'error');
+      closeCameraView(); return;
+    }
 
-  function scanFrame(timestamp) {
-    if (!scanning) return;
-    requestAnimationFrame(scanFrame);
+    let lastResult = '';
+    let cooldown   = false;
+    let lastScan   = 0;
 
-    // 100msスロットリング
-    if (timestamp - lastScan < 100) return;
-    lastScan = timestamp;
+    async function scanFrame(timestamp) {
+      if (!scanning) return;
+      requestAnimationFrame(scanFrame);
+      if (timestamp - lastScan < 200) return;
+      lastScan = timestamp;
+      if (video.readyState < 2 || video.videoWidth === 0) return;
+      if (cooldown) return;
 
-    // readyState >= 2（HAVE_CURRENT_DATA以上）で処理開始
-    // Androidでは4(HAVE_ENOUGH_DATA)に達しないまま映像が流れることがある
-    if (video.readyState < 2) return;
-    if (video.videoWidth === 0 || video.videoHeight === 0) return;
-    if (cooldown) return;
+      try {
+        const codes = await detector.detect(video);
+        if (codes.length > 0) {
+          const val = codes[0].rawValue;
+          if (val && val !== lastResult) {
+            lastResult = val;
+            cooldown   = true;
+            setTimeout(() => { cooldown = false; lastResult = ''; }, 2000);
+            handleFamilyId(val.trim());
+          }
+        }
+      } catch(e) { /* フレームスキップ */ }
+    }
 
-    // 解像度を複数段階で試す（小さい順の方がjsQRが速い）
-    const sizes = [320, 480, 640];
-    let found = null;
-    for (const maxSize of sizes) {
-      const scale   = Math.min(1, maxSize / Math.max(video.videoWidth, video.videoHeight));
+    video.addEventListener('loadeddata', () => requestAnimationFrame(scanFrame), { once: true });
+    video.play().catch(() => {});
+    showToast('📷 QRコードをカメラに向けてください', 'info');
+
+  } else {
+    // ---- jsQRフォールバック（BarcodeDetector非対応環境用） ----
+    if (typeof jsQR === 'undefined') {
+      showToast('QR読取ライブラリが利用できません。ページを再読み込みしてください。', 'error');
+      closeCameraView(); return;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx    = canvas.getContext('2d', { willReadFrequently: true });
+    let lastResult = '';
+    let cooldown   = false;
+    let lastScan   = 0;
+
+    function scanFrame(timestamp) {
+      if (!scanning) return;
+      requestAnimationFrame(scanFrame);
+      if (timestamp - lastScan < 150) return;
+      lastScan = timestamp;
+      if (video.readyState < 2 || video.videoWidth === 0) return;
+      if (cooldown) return;
+
+      const scale   = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
       canvas.width  = Math.floor(video.videoWidth  * scale);
       canvas.height = Math.floor(video.videoHeight * scale);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-      if (code && code.data) { found = code.data; break; }
+
+      if (code && code.data && code.data !== lastResult) {
+        lastResult = code.data;
+        cooldown   = true;
+        setTimeout(() => { cooldown = false; lastResult = ''; }, 2000);
+        handleFamilyId(code.data.trim());
+      }
     }
 
-    if (found && found !== lastResult) {
-      lastResult = found;
-      cooldown   = true;
-      setTimeout(() => { cooldown = false; lastResult = ''; }, 2000);
-      handleFamilyId(found.trim());
-    }
+    video.addEventListener('loadeddata', () => requestAnimationFrame(scanFrame), { once: true });
+    video.play().catch(() => {});
+    showToast('📷 QRコードをカメラに向けてください (jsQR)', 'info');
   }
-
-  qrInterval = { stop: () => { scanning = false; } };
-
-  // loadeddataイベント待ち：映像準備完了後にスキャン開始
-  const startScan = () => requestAnimationFrame(scanFrame);
-  video.addEventListener('loadeddata', startScan, { once: true });
-
-  // loadeddataが発火しない場合のフォールバック（500ms後に強制開始）
-  video.play().then(() => {
-    setTimeout(() => {
-      if (scanning && video.readyState >= 2) requestAnimationFrame(scanFrame);
-    }, 500);
-  }).catch(() => {
-    // autoplay失敗でも続行
-    setTimeout(startScan, 500);
-  });
 }
 
 function closeCameraView() {
