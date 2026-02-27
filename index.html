@@ -29,6 +29,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Orbitron:wght@600&display=swap');
 
 :root {
+  /* ダークテーマ（デフォルト：深夜の宇宙） */
   --bg-deep:     #0d1117;
   --bg-mid:      #1a1f35;
   --bg-card:     #1e2540;
@@ -37,7 +38,7 @@
   --accent2:     #f7c948;
   --teal:        #3dd6c8;
   --red:         #ff5f6d;
-  --green:       #4ade80;
+  --green:       #2dbb6a;
   --text-main:   #e8eaf6;
   --text-sub:    #8892b0;
   --text-muted:  #4a5270;
@@ -45,6 +46,28 @@
   --shadow:      0 8px 32px rgba(0,0,0,0.5);
   --radius:      14px;
   --radius-sm:   8px;
+  --header-bg:   linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
+  --header-border: #2a3255;
+}
+
+/* ライトテーマ */
+body.theme-light {
+  --bg-deep:     #f0f4f8;
+  --bg-mid:      #ffffff;
+  --bg-card:     #ffffff;
+  --bg-card2:    #f7f9fc;
+  --accent:      #0070f3;
+  --accent2:     #338ef7;
+  --teal:        #0e9de2;
+  --red:         #e53e3e;
+  --green:       #1a9e4a;
+  --text-main:   #1a202c;
+  --text-sub:    #4a5568;
+  --text-muted:  #a0aec0;
+  --border:      #e2e8f0;
+  --shadow:      0 4px 16px rgba(0,0,0,0.1);
+  --header-bg:   linear-gradient(135deg, #1a56db 0%, #0e3fa5 100%);
+  --header-border: #1a4dbe;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -57,7 +80,7 @@ html, body {
   overflow: hidden;
 }
 
-/* 星空背景 */
+/* 星空背景（ダークテーマのみ） */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -65,7 +88,9 @@ body::before {
     radial-gradient(ellipse at 20% 10%, rgba(61,214,200,0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(240,165,0,0.05) 0%, transparent 50%);
   pointer-events: none;
+  transition: opacity 0.3s;
 }
+body.theme-light::before { opacity: 0; }
 
 #stars {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -80,7 +105,27 @@ body::before {
     radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
     radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
     radial-gradient(2px 2px at 5%  40%, rgba(255,255,255,0.4) 0%, transparent 100%);
+  transition: opacity 0.3s;
 }
+body.theme-light #stars { opacity: 0; }
+
+/* ライトテーマ時のヘッダー文字色（白に固定） */
+body.theme-light .logo,
+body.theme-light .status-badge.online,
+body.theme-light .status-badge.offline,
+body.theme-light #open-settings,
+body.theme-light .queue-badge {
+  color: rgba(255,255,255,0.9) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  background: rgba(255,255,255,0.1) !important;
+}
+body.theme-light .progress-item {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.25);
+}
+body.theme-light .progress-label,
+body.theme-light .progress-num { color: rgba(255,255,255,0.9); }
+body.theme-light .progress-bar-wrap { background: rgba(255,255,255,0.2); }
 
 /* ---- レイアウト ---- */
 #app {
@@ -92,8 +137,8 @@ body::before {
 
 /* ---- ヘッダー ---- */
 header {
-  background: linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
-  border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
   padding: 12px 16px;
   flex-shrink: 0;
 }
@@ -212,6 +257,15 @@ header {
 .btn:active { transform: scale(0.96); }
 .btn-primary { background: var(--accent); color: #111; }
 .btn-primary:hover { background: var(--accent2); }
+body.theme-light .btn-primary { color: #fff; }
+body.theme-light .btn-primary:hover { background: var(--accent2); }
+body.theme-light .btn-teal {
+  background: var(--teal); color: #fff; border-color: var(--teal);
+}
+body.theme-light .btn-teal:hover { background: var(--accent2); border-color: var(--accent2); }
+body.theme-light .btn-qr {
+  background: var(--teal); color: #fff; border-color: var(--teal);
+}
 .btn-teal { background: rgba(61,214,200,0.15); color: var(--teal); border: 1px solid rgba(61,214,200,0.3); }
 .btn-teal:hover { background: rgba(61,214,200,0.25); }
 .btn-ghost { background: var(--bg-card2); color: var(--text-sub); border: 1px solid var(--border); }
@@ -511,6 +565,14 @@ header {
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <button class="btn btn-ghost btn-sm" id="refresh-data">🔄 データ再取得</button>
       <button class="btn btn-danger btn-sm" id="clear-data">🗑 全データ消去</button>
+    </div>
+    <hr style="border-color:var(--border);margin:16px 0;">
+    <div class="settings-row">
+      <label>配色テーマ</label>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm theme-toggle-btn" id="theme-dark" onclick="setTheme('dark')">🌙 ダーク</button>
+        <button class="btn btn-ghost btn-sm theme-toggle-btn" id="theme-light" onclick="setTheme('light')">☀️ ライト</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1265,11 +1327,7 @@ function showAddMemberForm(famId, refMember) {
           '<input type="hidden" id="new-tel"    value="' + telVal    + '">' +
           '<input type="hidden" id="new-type"   value="' + typeVal   + '">'
       ) +
-      '<div class="full">' +
-        '<div class="form-label">対象イベント</div>' +
-        '<div class="checkbox-row">' +
-          '</div>' +
-      '</div>' +
+
     '</div>' +
     '<div style="display:flex;gap:8px;">' +
       '<button class="btn btn-primary" id="submit-add" style="flex:1">登録する</button>' +
@@ -1492,7 +1550,7 @@ async function clearAllData() {
   await idbClear(STORE_PARTICIPANTS);
   await idbClear(STORE_QUEUE);
   renderFamilies({}, false);
-  updateStats({ plane:{total:0,done:0}, art:{total:0,done:0} });
+  updateStats({ total:0, done:0 });
   updateQueueBadge();
   showToast('全データを消去しました', 'info');
 }
@@ -1612,6 +1670,24 @@ function bindEvents() {
 }
 
 // ============================================================
+//  テーマ切り替え
+// ============================================================
+function setTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('theme-light');
+  } else {
+    document.body.classList.remove('theme-light');
+  }
+  // ボタンのactive状態を更新
+  document.getElementById('theme-dark') .classList.toggle('btn-primary', theme === 'dark');
+  document.getElementById('theme-light').classList.toggle('btn-primary', theme === 'light');
+  document.getElementById('theme-dark') .classList.toggle('btn-ghost',   theme !== 'dark');
+  document.getElementById('theme-light').classList.toggle('btn-ghost',   theme !== 'light');
+  // IndexedDBに保存
+  setMeta('theme', theme);
+}
+
+// ============================================================
 //  初期化
 // ============================================================
 // ============================================================
@@ -1629,6 +1705,10 @@ function startPolling() {
 async function init() {
   db = await openDB();
   await loadSettings();
+
+  // テーマ復元
+  const savedTheme = await getMeta('theme') || 'dark';
+  setTheme(savedTheme);
   await buildOfficeFilter();
   await updateLocalStats();
   await updateQueueBadge();
