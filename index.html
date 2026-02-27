@@ -584,11 +584,13 @@ header {
 
 <div id="toast-area"></div>
 
-<!-- jsQR ライブラリ（CDN） -->
-<!-- jsQR: BarcodeDetector非対応環境のフォールバック用（複数CDNフォールバック） -->
+<!-- jsQR: BarcodeDetector非対応環境（PC等）のフォールバック用 -->
+<!-- オフライン時はBarcodeDetectorを使うためjsQRは不要 -->
 <script>
 (function() {
-  // CDNを順番に試してjsQRをロード
+  if ('BarcodeDetector' in window) return; // BarcodeDetector対応なら不要
+  if (!navigator.onLine) return;           // オフライン時はロードしない
+
   const cdns = [
     'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js',
     'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js',
@@ -1387,6 +1389,11 @@ iOS設定 → Safari → カメラ → 許可`;
 
   } else {
     // ---- jsQRフォールバック（BarcodeDetector非対応環境用） ----
+    // オフライン時はjsQRが使えないため案内して終了
+    if (!navigator.onLine) {
+      showToast('オフライン時はQR読取にBarcodeDetector非対応のブラウザは使えません。Androidをご使用ください。', 'error');
+      closeCameraView(); return;
+    }
     // jsQRのロード完了を最大3秒待つ
     let waited = 0;
     while (typeof jsQR === 'undefined' && waited < 3000) {
