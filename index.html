@@ -301,10 +301,9 @@ header {
   border-radius: 4px; padding: 2px 8px; margin-left: 8px;
 }
 .family-tel {
-  font-size: 12px; color: var(--teal); text-decoration: none;
+  font-size: 12px; color: var(--teal);
   opacity: 0.85; margin-left: 8px;
 }
-.family-tel:hover { opacity: 1; text-decoration: underline; }
 
 .family-checkin-all {
   display: flex; gap: 6px;
@@ -890,7 +889,15 @@ function buildFamilyCard(famId, members) {
   badge.className = 'family-id-badge';
   badge.textContent = famId;
 
+  // 電話番号（家族内の最初の電話番号をテキスト表示）
+  const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
   header.appendChild(badge);
+  if (tel) {
+    const telEl = document.createElement('span');
+    telEl.className = 'family-tel';
+    telEl.textContent = '📞 ' + tel;
+    header.appendChild(telEl);
+  }
 
   const btns = document.createElement('div');
   btns.className = 'family-checkin-all';
