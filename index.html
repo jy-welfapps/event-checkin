@@ -1504,6 +1504,12 @@ function bindEvents() {
   // 事業所プルダウン変更時に即検索
   document.getElementById('filter-office').addEventListener('change', () => { search(); });
 
+  // 「全事業所」が選択済みのまま再タップされても検索リフレッシュ
+  document.getElementById('filter-office').addEventListener('click', () => {
+    const sel = document.getElementById('filter-office');
+    if (sel.value === '') search();
+  });
+
   // QRカメラ
   document.getElementById('open-camera').addEventListener('click', openCameraView);
   document.getElementById('close-camera').addEventListener('click', closeCameraView);
