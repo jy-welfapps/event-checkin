@@ -891,12 +891,24 @@ function buildFamilyCard(famId, members) {
   badge.textContent = famId;
 
   // 電話番号（家族内の最初の電話番号をテキスト表示）
-  const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
+  // スプレッドシートで数値形式になり頭の0が落ちる場合に補正する
+  function normalizeTel(raw) {
+    if (!raw && raw !== 0) return '';
+    let s = String(raw).replace(/\D/g, ''); // 数字のみ抽出
+    if (s.length === 10) s = '0' + s;       // 090-XXXX-XXXX → 先頭0が落ちて10桁になるので補完
+    // ハイフン整形: 0XX-XXXX-XXXX (11桁) or 0XXXX-XX-XXXX など
+    if (s.length === 11) {
+      return s.slice(0,3) + '-' + s.slice(3,7) + '-' + s.slice(7);
+    }
+    return s; // 想定外の桁数はそのまま返す
+  }
+  const telRaw = (members.find(m => m.電話番号) || {}).電話番号 || '';
+  const tel    = normalizeTel(telRaw);
   header.appendChild(badge);
   if (tel) {
     const telEl = document.createElement('a');
     telEl.className = 'family-tel';
-    telEl.href = 'tel:' + tel;
+    telEl.href = 'tel:' + tel.replace(/-/g, ''); // tel:リンクはハイフンなし
     telEl.textContent = '📞 ' + tel;
     header.appendChild(telEl);
   }
