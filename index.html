@@ -1248,8 +1248,8 @@ async function openCameraView() {
 
   // 制約を段階的に試す（Android対応）
   const constraints = [
-    // 解像度を明示することでAndroidのカメラが安定しやすい
-    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+    // QR読取には高解像度より適度な解像度のほうがjsQRが処理しやすい
+    { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } },
     { video: { facingMode: { ideal: 'environment' } } },
     { video: { facingMode: 'environment' } },
     { video: true }
@@ -1302,46 +1302,54 @@ iOS設定 → Safari → カメラ → 許可
   let lastResult = '';
   let cooldown   = false;
 
-  let frameCount = 0;
-  qrInterval = setInterval(() => {
-    frameCount++;
+  // setIntervalよりrequestAnimationFrameのほうがAndroidで安定
+  let scanning = true;
+  let lastScan = 0;
 
-    if (video.readyState < video.HAVE_ENOUGH_DATA) {
-      if (frameCount % 10 === 0) showToast('カメラ準備中… readyState=' + video.readyState, 'info');
-      return;
-    }
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-      if (frameCount % 10 === 0) showToast('映像サイズ取得待ち…', 'info');
-      return;
-    }
+  function scanFrame(timestamp) {
+    if (!scanning) return;
+    requestAnimationFrame(scanFrame);
+
+    // 100msスロットリング
+    if (timestamp - lastScan < 100) return;
+    lastScan = timestamp;
+
+    if (video.readyState < video.HAVE_ENOUGH_DATA) return;
+    if (video.videoWidth === 0 || video.videoHeight === 0) return;
     if (cooldown) return;
 
-    // 10フレームごとにデバッグ情報を表示
-    if (frameCount % 30 === 0) {
-      showToast(`スキャン中 ${video.videoWidth}x${video.videoHeight}`, 'info');
+    // 解像度を複数段階で試す
+    const sizes = [320, 480, 640];
+    let found = null;
+    for (const maxSize of sizes) {
+      const scale   = Math.min(1, maxSize / Math.max(video.videoWidth, video.videoHeight));
+      canvas.width  = Math.floor(video.videoWidth  * scale);
+      canvas.height = Math.floor(video.videoHeight * scale);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+      if (code && code.data) { found = code.data; break; }
     }
 
-    const scale  = Math.min(1, 640 / video.videoWidth);
-    canvas.width  = Math.floor(video.videoWidth  * scale);
-    canvas.height = Math.floor(video.videoHeight * scale);
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(img.data, img.width, img.height, {
-      inversionAttempts: 'attemptBoth'
-    });
-
-    if (code && code.data && code.data !== lastResult) {
-      lastResult = code.data;
+    if (found && found !== lastResult) {
+      lastResult = found;
       cooldown   = true;
       setTimeout(() => { cooldown = false; lastResult = ''; }, 2000);
-      handleFamilyId(code.data.trim());
+      handleFamilyId(found.trim());
     }
-  }, 150);
+  }
+
+  // qrIntervalにstop関数を入れてcloseCameraViewで止められるようにする
+  qrInterval = { stop: () => { scanning = false; } };
+  requestAnimationFrame(scanFrame);
 }
 
 function closeCameraView() {
-  clearInterval(qrInterval); qrInterval = null;
+  if (qrInterval) {
+    if (typeof qrInterval.stop === 'function') qrInterval.stop();
+    else clearInterval(qrInterval);
+    qrInterval = null;
+  }
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
   document.getElementById('camera-view').classList.remove('active');
 }
