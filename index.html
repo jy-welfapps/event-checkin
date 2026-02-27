@@ -803,16 +803,7 @@ async function search() {
 async function handleFamilyId(familyId) {
   closeCameraView();
 
-  if (navigator.onLine && state.gasUrl) {
-    try {
-      const data = await gasGet({ familyId });
-      if (!data.error && data.participants) {
-        for (const p of data.participants) await idbPut(STORE_PARTICIPANTS, p);
-        if (data.stats) updateStats(data.stats);
-      }
-    } catch (e) { /* オフラインでも続行 */ }
-  }
-
+  // ① まずローカルデータで即表示（待ち時間ゼロ）
   const all   = await idbGetAll(STORE_PARTICIPANTS);
   const group = all.filter(p => String(p.家族ID || '').trim() === familyId.trim());
 
@@ -825,6 +816,32 @@ async function handleFamilyId(familyId) {
   families[familyId] = group;
   renderFamilies(families, true);
   showToast(group[0].氏名 + 'さん一家 (' + group.length + '名) を表示', 'success');
+
+  // ② バックグラウンドでGASから最新データを取得して差分更新
+  if (navigator.onLine && state.gasUrl) {
+    gasGet({ familyId }).then(async data => {
+      if (!data.error && data.participants) {
+        let updated = false;
+        for (const p of data.participants) {
+          const local = all.find(x => x.個人ID === p.個人ID);
+          // サーバーの方が新しい場合のみ更新
+          if (!local || p.最終更新日時 > (local.最終更新日時 || '')) {
+            await idbPut(STORE_PARTICIPANTS, p);
+            updated = true;
+          }
+        }
+        if (data.stats) updateStats(data.stats);
+        // 差分があれば表示をサイレント更新
+        if (updated) {
+          const latest  = await idbGetAll(STORE_PARTICIPANTS);
+          const newGroup = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
+          const fams = {};
+          fams[familyId] = newGroup;
+          renderFamilies(fams, true);
+        }
+      }
+    }).catch(() => { /* バックグラウンド失敗は無視 */ });
+  }
 }
 
 // ============================================================
