@@ -1272,21 +1272,19 @@ async function openCameraView() {
     const isAndroid = /Android/.test(navigator.userAgent);
     let guide = '';
     if (isIOS) {
-      guide = '【iPhone/iPad】
+      guide = `【iPhone/iPad】
 iOS設定 → Safari → カメラ → 許可
-またはアドレスバー左の「AA」→ Webサイトの設定 → カメラ → 許可';
+またはアドレスバー左の「AA」→ Webサイトの設定 → カメラ → 許可`;
     } else if (isAndroid) {
-      guide = '【Android Chrome】
+      guide = `【Android Chrome】
 アドレスバー右の 🔒 → カメラ → 許可
-に変更してページを再読み込みしてください';
+に変更してページを再読み込みしてください`;
     } else {
-      guide = '【PC Chrome】
+      guide = `【PC Chrome】
 アドレスバー右の 🔒 またはカメラアイコン → カメラを許可
-に変更してページを再読み込みしてください';
+に変更してページを再読み込みしてください`;
     }
-    alert('カメラへのアクセスが拒否されています。
-
-' + guide);
+    alert('カメラへのアクセスが拒否されています。\n\n' + guide);
     return;
   }
 
