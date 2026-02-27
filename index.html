@@ -891,24 +891,12 @@ function buildFamilyCard(famId, members) {
   badge.textContent = famId;
 
   // 電話番号（家族内の最初の電話番号をテキスト表示）
-  // スプレッドシートで数値形式になり頭の0が落ちる場合に補正する
-  function normalizeTel(raw) {
-    if (!raw && raw !== 0) return '';
-    let s = String(raw).replace(/\D/g, ''); // 数字のみ抽出
-    if (s.length === 10) s = '0' + s;       // 090-XXXX-XXXX → 先頭0が落ちて10桁になるので補完
-    // ハイフン整形: 0XX-XXXX-XXXX (11桁) or 0XXXX-XX-XXXX など
-    if (s.length === 11) {
-      return s.slice(0,3) + '-' + s.slice(3,7) + '-' + s.slice(7);
-    }
-    return s; // 想定外の桁数はそのまま返す
-  }
-  const telRaw = (members.find(m => m.電話番号) || {}).電話番号 || '';
-  const tel    = normalizeTel(telRaw);
+  const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
   header.appendChild(badge);
   if (tel) {
     const telEl = document.createElement('a');
     telEl.className = 'family-tel';
-    telEl.href = 'tel:' + tel.replace(/-/g, ''); // tel:リンクはハイフンなし
+    telEl.href = 'tel:' + tel;
     telEl.textContent = '📞 ' + tel;
     header.appendChild(telEl);
   }
@@ -1020,7 +1008,7 @@ function buildPersonRow(person) {
 // ============================================================
 async function checkinPerson(個人ID, 家族ID, value, 体温) {
   const now       = new Date().toISOString();
-  const statusKey = '受付';
+  const statusKey = currentEvent === 'plane' ? 'プラネ受付' : '作品展受付';
 
   const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
@@ -1036,7 +1024,7 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
+  const update = { 個人ID, event: currentEvent, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
@@ -1052,14 +1040,16 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
 
 async function checkinAll(famId, members, value) {
   const now       = new Date().toISOString();
-  const statusKey = '受付';
+  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
+  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
   const updates   = [];
 
   for (const member of members) {
+    if (member[targetKey] !== '対象') continue;
     member[statusKey]    = value;
     member.最終更新日時 = now;
     await idbPut(STORE_PARTICIPANTS, member);
-    updates.push({ 個人ID: member.個人ID, value, timestamp: now });
+    updates.push({ 個人ID: member.個人ID, event: currentEvent, value, timestamp: now });
   }
 
   if (updates.length === 0) { showToast('対象者がいません', 'info'); return; }
