@@ -1008,7 +1008,7 @@ function buildPersonRow(person) {
 // ============================================================
 async function checkinPerson(個人ID, 家族ID, value, 体温) {
   const now       = new Date().toISOString();
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付' : '作品展受付';
+  const statusKey = '受付';
 
   const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
@@ -1024,7 +1024,7 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, event: currentEvent, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
+  const update = { 個人ID, value, 体温: 体温 || '', timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
@@ -1040,16 +1040,14 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
 
 async function checkinAll(famId, members, value) {
   const now       = new Date().toISOString();
-  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
+  const statusKey = '受付';
   const updates   = [];
 
   for (const member of members) {
-    if (member[targetKey] !== '対象') continue;
     member[statusKey]    = value;
     member.最終更新日時 = now;
     await idbPut(STORE_PARTICIPANTS, member);
-    updates.push({ 個人ID: member.個人ID, event: currentEvent, value, timestamp: now });
+    updates.push({ 個人ID: member.個人ID, value, timestamp: now });
   }
 
   if (updates.length === 0) { showToast('対象者がいません', 'info'); return; }
