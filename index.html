@@ -301,9 +301,10 @@ header {
   border-radius: 4px; padding: 2px 8px; margin-left: 8px;
 }
 .family-tel {
-  font-size: 12px; color: var(--teal);
+  font-size: 12px; color: var(--teal); text-decoration: none;
   opacity: 0.85; margin-left: 8px;
 }
+.family-tel:hover { opacity: 1; text-decoration: underline; }
 
 .family-checkin-all {
   display: flex; gap: 6px;
@@ -893,8 +894,9 @@ function buildFamilyCard(famId, members) {
   const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
   header.appendChild(badge);
   if (tel) {
-    const telEl = document.createElement('span');
+    const telEl = document.createElement('a');
     telEl.className = 'family-tel';
+    telEl.href = 'tel:' + tel;
     telEl.textContent = '📞 ' + tel;
     header.appendChild(telEl);
   }
