@@ -892,35 +892,58 @@ async function handleFamilyId(familyId) {
     return;
   }
 
-  const families = {};
-  families[familyId] = group;
-  renderFamilies(families, true);
-  showToast(group[0].氏名 + 'さん一家 (' + group.length + '名) を表示', 'success');
+  // ② タイムスタンプが空の人だけ自動受付（済 + タイムスタンプ記録）
+  const now        = new Date().toISOString();
+  const autoCheckin = group.filter(m => !m.最終更新日時);
+  if (autoCheckin.length > 0) {
+    for (const member of autoCheckin) {
+      member.受付         = '済';
+      member.最終更新日時 = now;
+      await idbPut(STORE_PARTICIPANTS, member);
+    }
+    const updates = autoCheckin.map(m => ({ 個人ID: m.個人ID, value: '済', 体温: '', timestamp: now }));
+    if (navigator.onLine && state.gasUrl) {
+      sendUpdates(updates).catch(() => {
+        updates.forEach(u => idbPut(STORE_QUEUE, { ...u, queuedAt: now }));
+        updateQueueBadge();
+      });
+    } else {
+      for (const u of updates) await idbPut(STORE_QUEUE, { ...u, queuedAt: now });
+      updateQueueBadge();
+    }
+  }
 
-  // ② バックグラウンドでGASから最新データを取得して差分更新
+  // ③ 最新ローカルデータで表示
+  const latest = await idbGetAll(STORE_PARTICIPANTS);
+  const newGroup = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
+  const families = {};
+  families[familyId] = newGroup;
+  renderFamilies(families, true);
+
+  const autoMsg = autoCheckin.length > 0 ? `（${autoCheckin.length}名を自動受付）` : '（受付済みのためスキップ）';
+  showToast(newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名を表示 ' + autoMsg, 'success');
+
+  // ④ バックグラウンドでGASから最新データを取得して差分更新
   if (navigator.onLine && state.gasUrl) {
     gasGet({ familyId }).then(async data => {
       if (!data.error && data.participants) {
         let updated = false;
         for (const p of data.participants) {
-          const local = all.find(x => x.個人ID === p.個人ID);
-          // サーバーの方が新しい場合のみ更新
+          const local = latest.find(x => x.個人ID === p.個人ID);
           if (!local || p.最終更新日時 > (local.最終更新日時 || '')) {
             await idbPut(STORE_PARTICIPANTS, p);
             updated = true;
           }
         }
         if (data.stats) updateStats(data.stats);
-        // 差分があれば表示をサイレント更新
         if (updated) {
-          const latest  = await idbGetAll(STORE_PARTICIPANTS);
-          const newGroup = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
+          const refreshed = await idbGetAll(STORE_PARTICIPANTS);
           const fams = {};
-          fams[familyId] = newGroup;
+          fams[familyId] = refreshed.filter(p => String(p.家族ID || '').trim() === familyId.trim());
           renderFamilies(fams, true);
         }
       }
-    }).catch(() => { /* バックグラウンド失敗は無視 */ });
+    }).catch(() => {});
   }
 }
 
