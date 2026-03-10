@@ -694,8 +694,9 @@ let db           = null;
 let isSyncing    = false;
 let qrStream     = null;
 let qrInterval   = null;
-let pollTimer    = null;   // 自動ポーリング用
-let isUserActive = false;  // 体温入力などの操作中フラグ
+let pollTimer       = null;   // 自動ポーリング用
+let isUserActive    = false;  // 体温入力などの操作中フラグ
+let currentFamilyId = null;   // QRスキャンで絞り込み中の家族ID（nullなら全件表示）
 
 const state = { gasUrl: '', apiKey: '' };
 
@@ -829,7 +830,7 @@ async function fetchAllData(silent = false) {
     await buildOfficeFilter();
     if (!silent) showToast(data.participants.length + '件取得しました', 'success');
     // 操作中でなければUIも更新
-    if (!isUserActive) await search();
+    if (!isUserActive) await refreshDisplay();
   } catch (e) {
     if (!silent) showToast('取得失敗: ' + e.message, 'error');
   }
@@ -853,9 +854,25 @@ async function buildOfficeFilter() {
 }
 
 // ============================================================
+//  表示リフレッシュ（QR絞り込み中は維持、そうでなければ全件検索）
+// ============================================================
+async function refreshDisplay() {
+  if (currentFamilyId) {
+    const all   = await idbGetAll(STORE_PARTICIPANTS);
+    const group = all.filter(p => String(p.家族ID || '').trim() === currentFamilyId);
+    const fams  = {};
+    fams[currentFamilyId] = group;
+    renderFamilies(fams, true);
+  } else {
+    await search();
+  }
+}
+
+// ============================================================
 //  検索（核心ロジック）
 // ============================================================
 async function search() {
+  currentFamilyId = null; // 手動検索時はQR絞り込みを解除
   const name      = document.getElementById('search-name').value.trim();
   const office    = document.getElementById('filter-office').value.trim();
   const childOnly = document.getElementById('filter-child-only').checked;
@@ -913,7 +930,8 @@ async function handleFamilyId(familyId) {
     }
   }
 
-  // ③ 最新ローカルデータで表示
+  // ③ 最新ローカルデータで表示（QR絞り込み状態をセット）
+  currentFamilyId = familyId.trim();
   const latest = await idbGetAll(STORE_PARTICIPANTS);
   const newGroup = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
   const families = {};
@@ -1263,7 +1281,7 @@ async function flushQueue() {
       }
       updateQueueBadge();
       showToast(queue.length + '件を同期しました', 'success');
-      await fetchAllData();
+      await refreshDisplay();
     }
   } catch (e) { /* 次回リトライ */ }
   finally { isSyncing = false; }
