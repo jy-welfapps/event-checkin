@@ -1136,21 +1136,21 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   const oldRow = document.querySelector('.person-row[data-pid="' + 個人ID + '"]');
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
-  // 受付取消時はシートの体温を空にする（ローカルは保持）
-  const sendTemp = value === '未' ? '' : (体温 || '');
-  const update = { 個人ID, value, 体温: sendTemp, timestamp: now };
-  if (navigator.onLine && state.gasUrl) {
-    await sendUpdates([update]);
-  } else {
-    await idbPut(STORE_QUEUE, { ...update, queuedAt: now });
-    updateQueueBadge();
-  }
-  // 受付完了時にバイブレーション
+  // 即座にフィードバック（GAS通信を待たない）
   if (value === '済' && navigator.vibrate) navigator.vibrate(150);
   showToast(
     value === '済' ? person.氏名 + 'を受付しました' : person.氏名 + 'の受付を取り消しました',
     value === '済' ? 'success' : 'info'
   );
+  // GAS送信はバックグラウンドで実行（失敗時はキューに保存）
+  const sendTemp = value === '未' ? '' : (体温 || '');
+  const update = { 個人ID, value, 体温: sendTemp, timestamp: now };
+  if (navigator.onLine && state.gasUrl) {
+    sendUpdates([update]);
+  } else {
+    await idbPut(STORE_QUEUE, { ...update, queuedAt: now });
+    updateQueueBadge();
+  }
 }
 // [修正1] checkinAll: 古いスナップショットではなくIndexedDBから最新データを取得してから更新
 async function checkinAll(famId, value) {
@@ -1174,18 +1174,19 @@ async function checkinAll(famId, value) {
     card.replaceWith(buildFamilyCard(famId, latest.filter(p => String(p.家族ID).trim() === famId)));
   }
   updateLocalStats();
-  if (navigator.onLine && state.gasUrl) {
-    await sendUpdates(updates);
-  } else {
-    for (const u of updates) await idbPut(STORE_QUEUE, { ...u, queuedAt: now });
-    updateQueueBadge();
-  }
-  // 受付完了時にバイブレーション（一括）
+  // 即座にフィードバック（GAS通信を待たない）
   if (value === '済' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
   showToast(
     value === '済' ? updates.length + '名を一括受付しました' : updates.length + '名の受付を取り消しました',
     value === '済' ? 'success' : 'info'
   );
+  // GAS送信はバックグラウンドで実行
+  if (navigator.onLine && state.gasUrl) {
+    sendUpdates(updates);
+  } else {
+    for (const u of updates) await idbPut(STORE_QUEUE, { ...u, queuedAt: now });
+    updateQueueBadge();
+  }
 }
 // ============================================================
 //  GAS送信 / キュー
@@ -1686,6 +1687,3 @@ init().catch(e => {
   console.error('Init failed:', e);
   showToast('起動エラー: ' + e.message, 'error');
 });
-</script>
-</body>
-</html>
