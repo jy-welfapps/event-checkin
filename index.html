@@ -867,20 +867,17 @@ async function handleFamilyId(familyId) {
   }
 
   // ② 最終更新日時が空の人だけ自動受付（初回のみ）
-  const now         = new Date().toISOString();
+  const now       = new Date().toISOString();
   const autoCheckin = group.filter(m => !m.最終更新日時);
   if (autoCheckin.length > 0) {
     for (const member of autoCheckin) {
-      member.受付         = '済';
-      member.最終更新日時 = now;
+      member.受付          = '済';
+      member.最終更新日時  = now;
       await idbPut(STORE_PARTICIPANTS, member);
     }
     const updates = autoCheckin.map(m => ({ 個人ID: m.個人ID, value: '済', 体温: '', timestamp: now }));
     if (navigator.onLine && state.gasUrl) {
-      sendUpdates(updates).catch(() => {
-        updates.forEach(u => idbPut(STORE_QUEUE, { ...u, queuedAt: now }));
-        updateQueueBadge();
-      });
+      sendUpdates(updates);
     } else {
       for (const u of updates) await idbPut(STORE_QUEUE, { ...u, queuedAt: now });
       updateQueueBadge();
@@ -902,16 +899,12 @@ async function handleFamilyId(familyId) {
     showToast('⚠️ ' + newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名（再スキャン - 受付状況を確認）', 'info');
   }
 
-  // ④ 60秒後に自動クリア（操作中は延長）
-  function scheduleDismiss() {
-    dismissTimer = setTimeout(async () => {
-      if (isUserActive) { scheduleDismiss(); return; }
-      currentFamilyId = null;
-      dismissTimer    = null;
-      await search();
-    }, 60000);
-  }
-  scheduleDismiss();
+  // ④ 60秒後に自動クリア
+  dismissTimer = setTimeout(async () => {
+    currentFamilyId = null;
+    dismissTimer    = null;
+    await search();
+  }, 60000);
 
   // ⑤ バックグラウンドでGASから最新データを取得して差分更新
   if (navigator.onLine && state.gasUrl) {
@@ -1079,10 +1072,9 @@ function buildPersonRow(person) {
     tempInput.appendChild(opt);
   }
 
-  const eventKey  = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
-  const isTarget  = person[eventKey]  === '対象';
-  const isDone    = person[statusKey] === '済';
+  const eventKey = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
+  const isTarget = person[eventKey] === '対象';
+  const isDone   = person.受付 === '済';
 
   // 対象外は行ごと非表示（nullを返して呼び出し側でスキップ）
   if (!isTarget) return null;
@@ -1111,16 +1103,14 @@ function buildPersonRow(person) {
 //  チェックイン
 // ============================================================
 async function checkinPerson(個人ID, 家族ID, value, 体温) {
-  const now       = new Date().toISOString();
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付' : '作品展受付';
-
+  const now    = new Date().toISOString();
   const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
   if (!person) return;
 
-  person[statusKey]    = value;
+  person.受付          = value;
   if (体温 !== '' && 体温 !== undefined) person.体温 = 体温;
-  person.最終更新日時 = now;
+  person.最終更新日時  = now;
   await idbPut(STORE_PARTICIPANTS, person);
 
   // 行を差分更新
@@ -1128,7 +1118,7 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, event: currentEvent, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
+  const update = { 個人ID, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
@@ -1144,16 +1134,15 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
 
 async function checkinAll(famId, members, value) {
   const now       = new Date().toISOString();
-  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
-  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
+  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
   const updates   = [];
 
   for (const member of members) {
     if (member[targetKey] !== '対象') continue;
-    member[statusKey]    = value;
-    member.最終更新日時 = now;
+    member.受付          = value;
+    member.最終更新日時  = now;
     await idbPut(STORE_PARTICIPANTS, member);
-    updates.push({ 個人ID: member.個人ID, event: currentEvent, value, timestamp: now });
+    updates.push({ 個人ID: member.個人ID, value, timestamp: now });
   }
 
   if (updates.length === 0) { showToast('対象者がいません', 'info'); return; }
@@ -1267,13 +1256,22 @@ function updateStats(stats) {
   if (!stats) return;
   const total = stats.total || 0;
   const done  = stats.done  || 0;
-  document.getElementById('checkin-count').textContent = done + '/' + total;
-  document.getElementById('checkin-bar').style.width   = (total ? done/total*100 : 0) + '%';
+  const countEl = document.getElementById('plane-count') || document.getElementById('checkin-count');
+  const barEl   = document.getElementById('plane-bar')   || document.getElementById('checkin-bar');
+  if (countEl) countEl.textContent = done + '/' + total;
+  if (barEl)   barEl.style.width   = (total ? done/total*100 : 0) + '%';
+  // art側はゼロクリア（使用しない）
+  const artCount = document.getElementById('art-count');
+  const artBar   = document.getElementById('art-bar');
+  if (artCount) artCount.textContent = '';
+  if (artBar)   artBar.style.width   = '0%';
 }
 
 async function updateLocalStats() {
-  const all   = await idbGetAll(STORE_PARTICIPANTS);
-  const stats = { total: all.length, done: all.filter(p => p.受付 === '済').length };
+  const all       = await idbGetAll(STORE_PARTICIPANTS);
+  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
+  const targets   = all.filter(p => p[targetKey] === '対象');
+  const stats     = { total: targets.length, done: targets.filter(p => p.受付 === '済').length };
   updateStats(stats);
 }
 
@@ -1371,9 +1369,9 @@ async function submitAddForm() {
     事業所:     document.getElementById('new-office').value.trim(),
     電話番号:   document.getElementById('new-tel').value.trim(),
     参加形態:   document.getElementById('new-type').value,
-    プラネ鑑賞: planeTarget, プラネ受付: planeTarget === '対象' ? '未' : '-',
-    作品展:     artTarget,   作品展受付: artTarget   === '対象' ? '未' : '-',
-    体温: '', 最終更新日時: new Date().toISOString()
+    プラネ鑑賞: planeTarget,
+    作品展:     artTarget,
+    受付: '未', 体温: '', 最終更新日時: ''
   };
 
   await idbPut(STORE_PARTICIPANTS, rec);
@@ -1392,7 +1390,8 @@ async function submitAddForm() {
 
   document.getElementById('add-form-el')?.remove();
   await buildOfficeFilter();
-  updateLocalStats();
+  await updateLocalStats();
+  await search();
 }
 
 // ============================================================
@@ -1565,7 +1564,7 @@ async function clearAllData() {
   await idbClear(STORE_PARTICIPANTS);
   await idbClear(STORE_QUEUE);
   renderFamilies({}, false);
-  updateStats({ plane:{total:0,done:0}, art:{total:0,done:0} });
+  updateStats({ total: 0, done: 0 });
   updateQueueBadge();
   showToast('全データを消去しました', 'info');
 }
