@@ -29,6 +29,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Orbitron:wght@600&display=swap');
 
 :root {
+  /* ダークテーマ（デフォルト：深夜の宇宙） */
   --bg-deep:     #0d1117;
   --bg-mid:      #1a1f35;
   --bg-card:     #1e2540;
@@ -37,7 +38,7 @@
   --accent2:     #f7c948;
   --teal:        #3dd6c8;
   --red:         #ff5f6d;
-  --green:       #4ade80;
+  --green:       #2dbb6a;
   --text-main:   #e8eaf6;
   --text-sub:    #8892b0;
   --text-muted:  #4a5270;
@@ -45,6 +46,28 @@
   --shadow:      0 8px 32px rgba(0,0,0,0.5);
   --radius:      14px;
   --radius-sm:   8px;
+  --header-bg:   linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
+  --header-border: #2a3255;
+}
+
+/* ライトテーマ */
+body.theme-light {
+  --bg-deep:     #f0f4f8;
+  --bg-mid:      #ffffff;
+  --bg-card:     #ffffff;
+  --bg-card2:    #f7f9fc;
+  --accent:      #0070f3;
+  --accent2:     #338ef7;
+  --teal:        #0e9de2;
+  --red:         #e53e3e;
+  --green:       #1a9e4a;
+  --text-main:   #1a202c;
+  --text-sub:    #4a5568;
+  --text-muted:  #a0aec0;
+  --border:      #e2e8f0;
+  --shadow:      0 4px 16px rgba(0,0,0,0.1);
+  --header-bg:   linear-gradient(135deg, #1a56db 0%, #0e3fa5 100%);
+  --header-border: #1a4dbe;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -57,7 +80,7 @@ html, body {
   overflow: hidden;
 }
 
-/* 星空背景 */
+/* 星空背景（ダークテーマのみ） */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -65,7 +88,9 @@ body::before {
     radial-gradient(ellipse at 20% 10%, rgba(61,214,200,0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(240,165,0,0.05) 0%, transparent 50%);
   pointer-events: none;
+  transition: opacity 0.3s;
 }
+body.theme-light::before { opacity: 0; }
 
 #stars {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
@@ -80,7 +105,27 @@ body::before {
     radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
     radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
     radial-gradient(2px 2px at 5%  40%, rgba(255,255,255,0.4) 0%, transparent 100%);
+  transition: opacity 0.3s;
 }
+body.theme-light #stars { opacity: 0; }
+
+/* ライトテーマ時のヘッダー文字色（白に固定） */
+body.theme-light .logo,
+body.theme-light .status-badge.online,
+body.theme-light .status-badge.offline,
+body.theme-light #open-settings,
+body.theme-light .queue-badge {
+  color: rgba(255,255,255,0.9) !important;
+  border-color: rgba(255,255,255,0.3) !important;
+  background: rgba(255,255,255,0.1) !important;
+}
+body.theme-light .progress-item {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.25);
+}
+body.theme-light .progress-label,
+body.theme-light .progress-num { color: rgba(255,255,255,0.9); }
+body.theme-light .progress-bar-wrap { background: rgba(255,255,255,0.2); }
 
 /* ---- レイアウト ---- */
 #app {
@@ -92,8 +137,8 @@ body::before {
 
 /* ---- ヘッダー ---- */
 header {
-  background: linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
-  border-bottom: 1px solid var(--border);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
   padding: 12px 16px;
   flex-shrink: 0;
 }
@@ -212,6 +257,15 @@ header {
 .btn:active { transform: scale(0.96); }
 .btn-primary { background: var(--accent); color: #111; }
 .btn-primary:hover { background: var(--accent2); }
+body.theme-light .btn-primary { color: #fff; }
+body.theme-light .btn-primary:hover { background: var(--accent2); }
+body.theme-light .btn-teal {
+  background: var(--teal); color: #fff; border-color: var(--teal);
+}
+body.theme-light .btn-teal:hover { background: var(--accent2); border-color: var(--accent2); }
+body.theme-light .btn-qr {
+  background: var(--teal); color: #fff; border-color: var(--teal);
+}
 .btn-teal { background: rgba(61,214,200,0.15); color: var(--teal); border: 1px solid rgba(61,214,200,0.3); }
 .btn-teal:hover { background: rgba(61,214,200,0.25); }
 .btn-ghost { background: var(--bg-card2); color: var(--text-sub); border: 1px solid var(--border); }
@@ -295,6 +349,11 @@ header {
   background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.25);
   border-radius: 4px; padding: 2px 7px; font-family: 'Orbitron', sans-serif;
 }
+.family-seat {
+  font-size: 12px; font-weight: 900; color: var(--accent);
+  background: rgba(240,165,0,0.12); border: 1px solid rgba(240,165,0,0.3);
+  border-radius: 4px; padding: 2px 8px; margin-left: 8px;
+}
 .family-tel {
   font-size: 12px; color: var(--teal); text-decoration: none;
   opacity: 0.85; margin-left: 8px;
@@ -357,6 +416,15 @@ header {
   -webkit-appearance: none; appearance: none; cursor: pointer;
 }
 .temp-input:focus { border-color: var(--accent); }
+.temp-input.temp-required {
+  border-color: var(--red) !important;
+  background: rgba(255,95,109,0.08);
+  animation: tempPulse 2s ease-in-out infinite;
+}
+@keyframes tempPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,95,109,0); }
+  50%      { box-shadow: 0 0 0 3px rgba(255,95,109,0.3); }
+}
 
 /* ---- 新規追加フォーム ---- */
 .add-form {
@@ -451,33 +519,6 @@ header {
 .modal-actions { display: flex; gap: 8px; }
 .modal-actions .btn { flex: 1; }
 
-/* ---- キューパネル ---- */
-.queue-panel {
-  display: none; position: fixed; inset: 0; z-index: 200;
-  background: rgba(13,17,23,0.9); align-items: flex-end;
-}
-.queue-panel.active { display: flex; }
-.queue-panel-inner {
-  width: 100%; max-width: 768px; margin: 0 auto;
-  background: var(--bg-card); border-radius: var(--radius) var(--radius) 0 0;
-  padding: 20px; border: 1px solid var(--border); border-bottom: none;
-  max-height: 70vh; display: flex; flex-direction: column;
-}
-.queue-panel-inner h2 { font-size: 15px; margin-bottom: 12px; color: var(--accent); flex-shrink: 0; }
-.queue-list { overflow-y: auto; flex: 1; }
-.queue-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-  font-size: 13px;
-}
-.queue-item:last-child { border-bottom: none; }
-.queue-item-name { flex: 1; font-weight: 700; }
-.queue-item-meta { font-size: 11px; color: var(--text-sub); }
-.queue-item-value { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-.queue-item-value.done  { background: rgba(74,222,128,0.15); color: var(--green); }
-.queue-item-value.undone { background: rgba(255,95,109,0.15); color: var(--red); }
-.queue-badge { cursor: pointer; }
-
 /* ---- スクロールバー ---- */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -525,16 +566,13 @@ header {
       <button class="btn btn-ghost btn-sm" id="refresh-data">🔄 データ再取得</button>
       <button class="btn btn-danger btn-sm" id="clear-data">🗑 全データ消去</button>
     </div>
-  </div>
-</div>
-
-<!-- キューパネル -->
-<div class="queue-panel" id="queue-panel">
-  <div class="queue-panel-inner">
-    <h2>📤 送信待ちキュー</h2>
-    <div class="queue-list" id="queue-list"></div>
-    <div style="margin-top:14px; flex-shrink:0;">
-      <button class="btn btn-ghost" id="close-queue" style="width:100%">閉じる</button>
+    <hr style="border-color:var(--border);margin:16px 0;">
+    <div class="settings-row">
+      <label>配色テーマ</label>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm theme-toggle-btn" id="theme-dark" onclick="setTheme('dark')">🌙 ダーク</button>
+        <button class="btn btn-ghost btn-sm theme-toggle-btn" id="theme-light" onclick="setTheme('light')">☀️ ライト</button>
+      </div>
     </div>
   </div>
 </div>
@@ -571,26 +609,16 @@ header {
     </div>
     <div class="progress-row">
       <div class="progress-item">
-        <span class="progress-label">🔭 プラネ</span>
+        <span class="progress-label">✅ 受付</span>
         <div class="progress-bar-wrap">
-          <div class="progress-bar" id="plane-bar" style="width:0%"></div>
+          <div class="progress-bar" id="checkin-bar" style="width:0%"></div>
         </div>
-        <span class="progress-num" id="plane-count">0/0</span>
-      </div>
-      <div class="progress-item">
-        <span class="progress-label">🎨 作品展</span>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar" id="art-bar" style="width:0%"></div>
-        </div>
-        <span class="progress-num" id="art-count">0/0</span>
+        <span class="progress-num" id="checkin-count">0/0</span>
       </div>
     </div>
   </header>
 
-  <div class="tabs">
-    <button class="tab-btn active" data-event="plane">🔭 プラネタリウム</button>
-    <button class="tab-btn" data-event="art">🎨 作品展</button>
-  </div>
+  
 
   <div class="search-area">
     <div class="search-row">
@@ -609,6 +637,10 @@ header {
         </select>
         <span class="select-arrow">▼</span>
       </div>
+      <label class="checkbox-label" style="flex-shrink:0; font-size:12px; color:var(--text-sub); white-space:nowrap; cursor:pointer;">
+        <input type="checkbox" id="filter-child-only" style="accent-color:var(--accent); width:14px; height:14px;">
+        利用児童のみ
+      </label>
     </div>
   </div>
 
@@ -657,13 +689,14 @@ const STORE_PARTICIPANTS = 'participants';
 const STORE_QUEUE        = 'syncQueue';
 const STORE_META         = 'meta';
 
-let db              = null;
-let currentEvent    = 'plane';
-let isSyncing       = false;
-let qrStream        = null;
-let qrInterval      = null;
-let currentFamilyId = null;   // QRスキャンで絞り込み中の家族ID
-let dismissTimer    = null;   // カード自動消去タイマー
+let db           = null;
+// イベントタブ廃止：一括受付に統合
+let isSyncing    = false;
+let qrStream     = null;
+let qrInterval   = null;
+let pollTimer       = null;   // 自動ポーリング用
+let isUserActive    = false;  // 体温入力などの操作中フラグ
+let currentFamilyId = null;   // QRスキャンで絞り込み中の家族ID（nullなら全件表示）
 
 const state = { gasUrl: '', apiKey: '' };
 
@@ -778,13 +811,15 @@ async function gasPost(body) {
 // ============================================================
 //  データ取得・同期
 // ============================================================
-async function fetchAllData() {
+async function fetchAllData(silent = false) {
   if (!state.gasUrl || !state.apiKey) {
-    showToast('⚙️ 設定からURLとAPIキーを入力してください', 'info');
-    document.getElementById('settings-panel').classList.add('active');
+    if (!silent) {
+      showToast('⚙️ 設定からURLとAPIキーを入力してください', 'info');
+      document.getElementById('settings-panel').classList.add('active');
+    }
     return;
   }
-  showToast('データを取得中…', 'info');
+  if (!silent) showToast('データを取得中…', 'info');
   try {
     const data = await gasGet();
     if (data.error) throw new Error(data.error);
@@ -793,11 +828,11 @@ async function fetchAllData() {
     await setMeta('lastSync', new Date().toISOString());
     updateStats(data.stats);
     await buildOfficeFilter();
-    showToast(data.participants.length + '件取得しました', 'success');
-    // 取得完了後に全員を一覧表示
-    await search();
+    if (!silent) showToast(data.participants.length + '件取得しました', 'success');
+    // 操作中でなければUIも更新
+    if (!isUserActive) await refreshDisplay();
   } catch (e) {
-    showToast('取得失敗: ' + e.message, 'error');
+    if (!silent) showToast('取得失敗: ' + e.message, 'error');
   }
 }
 
@@ -819,23 +854,34 @@ async function buildOfficeFilter() {
 }
 
 // ============================================================
+//  表示リフレッシュ（QR絞り込み中は維持、そうでなければ全件検索）
+// ============================================================
+async function refreshDisplay() {
+  if (currentFamilyId) {
+    const all   = await idbGetAll(STORE_PARTICIPANTS);
+    const group = all.filter(p => String(p.家族ID || '').trim() === currentFamilyId);
+    const fams  = {};
+    fams[currentFamilyId] = group;
+    renderFamilies(fams, true);
+  } else {
+    await search();
+  }
+}
+
+// ============================================================
 //  検索（核心ロジック）
 // ============================================================
 async function search() {
-  // 手動検索時は自動消去タイマーをキャンセル
-  if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null; }
-  currentFamilyId = null;
-
-  const name   = document.getElementById('search-name').value.trim();
-  const office = document.getElementById('filter-office').value.trim();
+  currentFamilyId = null; // 手動検索時はQR絞り込みを解除
+  const name      = document.getElementById('search-name').value.trim();
+  const office    = document.getElementById('filter-office').value.trim();
+  const childOnly = document.getElementById('filter-child-only').checked;
 
   let all = await idbGetAll(STORE_PARTICIPANTS);
-  console.log('[search] total records:', all.length, '| office:', office, '| name:', name);
 
-  if (office) all = all.filter(p => (p.事業所 || '').trim() === office);
-  if (name)   all = all.filter(p => (p.氏名   || '').includes(name));
-
-  console.log('[search] filtered:', all.length);
+  if (office)    all = all.filter(p => (p.事業所 || '').trim() === office);
+  if (name)      all = all.filter(p => (p.氏名   || '').includes(name));
+  if (childOnly) all = all.filter(p => (p.区分   || '') === '利用児童');
 
   // 家族IDでグループ化
   const families = {};
@@ -854,10 +900,7 @@ async function search() {
 async function handleFamilyId(familyId) {
   closeCameraView();
 
-  // 既存タイマーをリセット
-  if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null; }
-
-  // ① ローカルデータで即座に検索
+  // ① まずローカルデータで即表示（待ち時間ゼロ）
   const all   = await idbGetAll(STORE_PARTICIPANTS);
   const group = all.filter(p => String(p.家族ID || '').trim() === familyId.trim());
 
@@ -866,47 +909,39 @@ async function handleFamilyId(familyId) {
     return;
   }
 
-  // ② 最終更新日時が空の人だけ自動受付（初回のみ）
-  const now       = new Date().toISOString();
+  // ② タイムスタンプが空の人だけ自動受付（済 + タイムスタンプ記録）
+  const now        = new Date().toISOString();
   const autoCheckin = group.filter(m => !m.最終更新日時);
   if (autoCheckin.length > 0) {
     for (const member of autoCheckin) {
-      member.受付          = '済';
-      member.最終更新日時  = now;
+      member.受付         = '済';
+      member.最終更新日時 = now;
       await idbPut(STORE_PARTICIPANTS, member);
     }
     const updates = autoCheckin.map(m => ({ 個人ID: m.個人ID, value: '済', 体温: '', timestamp: now }));
     if (navigator.onLine && state.gasUrl) {
-      sendUpdates(updates);
+      sendUpdates(updates).catch(() => {
+        updates.forEach(u => idbPut(STORE_QUEUE, { ...u, queuedAt: now }));
+        updateQueueBadge();
+      });
     } else {
       for (const u of updates) await idbPut(STORE_QUEUE, { ...u, queuedAt: now });
       updateQueueBadge();
     }
   }
 
-  // ③ 最新データで表示
+  // ③ 最新ローカルデータで表示（QR絞り込み状態をセット）
   currentFamilyId = familyId.trim();
-  const latest   = await idbGetAll(STORE_PARTICIPANTS);
+  const latest = await idbGetAll(STORE_PARTICIPANTS);
   const newGroup = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
   const families = {};
   families[familyId] = newGroup;
   renderFamilies(families, true);
 
-  if (navigator.vibrate) navigator.vibrate(autoCheckin.length > 0 ? [100, 50, 100] : 80);
-  if (autoCheckin.length > 0) {
-    showToast(newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名（' + autoCheckin.length + '名を自動受付）', 'success');
-  } else {
-    showToast('⚠️ ' + newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名（再スキャン - 受付状況を確認）', 'info');
-  }
+  const autoMsg = autoCheckin.length > 0 ? `（${autoCheckin.length}名を自動受付）` : '（受付済みのためスキップ）';
+  showToast(newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名を表示 ' + autoMsg, 'success');
 
-  // ④ 60秒後に自動クリア
-  dismissTimer = setTimeout(async () => {
-    currentFamilyId = null;
-    dismissTimer    = null;
-    await search();
-  }, 60000);
-
-  // ⑤ バックグラウンドでGASから最新データを取得して差分更新
+  // ④ バックグラウンドでGASから最新データを取得して差分更新
   if (navigator.onLine && state.gasUrl) {
     gasGet({ familyId }).then(async data => {
       if (!data.error && data.participants) {
@@ -974,17 +1009,15 @@ function buildFamilyCard(famId, members) {
   badge.className = 'family-id-badge';
   badge.textContent = famId;
 
-  // 電話番号（家族内の最初の電話番号を使用）
+  // 電話番号（家族内の最初の電話番号をテキスト表示）
   const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
+  header.appendChild(badge);
   if (tel) {
     const telEl = document.createElement('a');
     telEl.className = 'family-tel';
-    telEl.href = 'tel:' + tel.replace(/[^\d+]/g, '');
+    telEl.href = 'tel:' + tel;
     telEl.textContent = '📞 ' + tel;
-    header.appendChild(badge);
     header.appendChild(telEl);
-  } else {
-    header.appendChild(badge);
   }
 
   const btns = document.createElement('div');
@@ -1016,12 +1049,7 @@ function buildFamilyCard(famId, members) {
     if (row) section.appendChild(row); // 対象外はnullなのでスキップ
   });
 
-  // 対象者が1人もいない場合はカード自体を非表示
-  const hasTarget = members.some(p => {
-    const key = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
-    return p[key] === '対象';
-  });
-  if (!hasTarget) return null;
+
 
   return section;
 }
@@ -1072,12 +1100,32 @@ function buildPersonRow(person) {
     tempInput.appendChild(opt);
   }
 
-  const eventKey = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
-  const isTarget = person[eventKey] === '対象';
-  const isDone   = person.受付 === '済';
+  const isDone = person.受付 === '済';
 
-  // 対象外は行ごと非表示（nullを返して呼び出し側でスキップ）
-  if (!isTarget) return null;
+  // 受付済み・利用児童・体温未入力 → 赤ハイライト
+  if (isDone && person.区分 === '利用児童' && !person.体温) {
+    tempInput.classList.add('temp-required');
+  }
+
+  // 体温変更時の自動送信（受付済みの場合のみ、1秒デバウンス）
+  let tempTimer = null;
+  tempInput.addEventListener('focus', () => { isUserActive = true; });
+  tempInput.addEventListener('change', () => {
+    isUserActive = true;
+    if (!isDone) return; // 未受付は受付ボタン押下時に一緒に送る
+    if (tempInput.value === '') return;
+    tempInput.classList.remove('temp-required'); // 入力されたので赤解除
+    clearTimeout(tempTimer);
+    tempInput.style.borderColor = 'var(--accent)';
+    tempTimer = setTimeout(async () => {
+      await saveTempOnly(person.個人ID, person.家族ID, tempInput.value);
+      tempInput.style.borderColor = 'var(--green)';
+      setTimeout(() => { tempInput.style.borderColor = ''; isUserActive = false; }, 1500);
+    }, 1000);
+  });
+  tempInput.addEventListener('blur', () => {
+    setTimeout(() => { isUserActive = false; }, 1500);
+  });
 
   const checkinBtn = document.createElement('button');
   checkinBtn.className = 'checkin-btn';
@@ -1102,15 +1150,39 @@ function buildPersonRow(person) {
 // ============================================================
 //  チェックイン
 // ============================================================
-async function checkinPerson(個人ID, 家族ID, value, 体温) {
+//  体温のみ保存（受付済み後に体温を入力したケース）
+// ============================================================
+async function saveTempOnly(個人ID, 家族ID, 体温) {
   const now    = new Date().toISOString();
   const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
   if (!person) return;
 
-  person.受付          = value;
+  person.体温         = 体温;
+  person.最終更新日時 = now;
+  await idbPut(STORE_PARTICIPANTS, person);
+
+  const update = { 個人ID, value: person.受付, 体温, timestamp: now };
+  if (navigator.onLine && state.gasUrl) {
+    await sendUpdates([update]);
+  } else {
+    await idbPut(STORE_QUEUE, { ...update, queuedAt: now });
+    updateQueueBadge();
+  }
+}
+
+// ============================================================
+async function checkinPerson(個人ID, 家族ID, value, 体温) {
+  const now       = new Date().toISOString();
+  const statusKey = '受付';
+
+  const all    = await idbGetAll(STORE_PARTICIPANTS);
+  const person = all.find(p => p.個人ID === 個人ID);
+  if (!person) return;
+
+  person[statusKey]    = value;
   if (体温 !== '' && 体温 !== undefined) person.体温 = 体温;
-  person.最終更新日時  = now;
+  person.最終更新日時 = now;
   await idbPut(STORE_PARTICIPANTS, person);
 
   // 行を差分更新
@@ -1118,7 +1190,9 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  const update = { 個人ID, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
+  // 受付取消時はシートの体温を空にする（ローカルは保持）
+  const sendTemp = value === '未' ? '' : (体温 || '');
+  const update = { 個人ID, value, 体温: sendTemp, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
@@ -1134,13 +1208,12 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
 
 async function checkinAll(famId, members, value) {
   const now       = new Date().toISOString();
-  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
+  const statusKey = '受付';
   const updates   = [];
 
   for (const member of members) {
-    if (member[targetKey] !== '対象') continue;
-    member.受付          = value;
-    member.最終更新日時  = now;
+    member[statusKey]    = value;
+    member.最終更新日時 = now;
     await idbPut(STORE_PARTICIPANTS, member);
     updates.push({ 個人ID: member.個人ID, value, timestamp: now });
   }
@@ -1208,7 +1281,7 @@ async function flushQueue() {
       }
       updateQueueBadge();
       showToast(queue.length + '件を同期しました', 'success');
-      await fetchAllData();
+      await refreshDisplay();
     }
   } catch (e) { /* 次回リトライ */ }
   finally { isSyncing = false; }
@@ -1221,34 +1294,6 @@ async function updateQueueBadge() {
   badge.classList.toggle('visible', queue.length > 0);
 }
 
-async function showQueueModal() {
-  const queue = await idbGetAll(STORE_QUEUE);
-  const all   = await idbGetAll(STORE_PARTICIPANTS);
-  const list  = document.getElementById('queue-list');
-
-  if (queue.length === 0) {
-    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">送信待ちのジョブはありません</div>';
-  } else {
-    list.innerHTML = '';
-    queue.forEach(item => {
-      const person = all.find(p => p.個人ID === item.個人ID);
-      const name   = person ? person.氏名 : item.個人ID;
-      const time   = item.queuedAt ? new Date(item.queuedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '';
-      const el = document.createElement('div');
-      el.className = 'queue-item';
-      el.innerHTML =
-        '<div>' +
-          '<div class="queue-item-name">' + name + '</div>' +
-          '<div class="queue-item-meta">' + item.個人ID + (item.体温 ? ' ／ 体温 ' + item.体温 + '℃' : '') + (time ? ' ／ ' + time : '') + '</div>' +
-        '</div>' +
-        '<span class="queue-item-value ' + (item.value === '済' ? 'done' : 'undone') + '">' + (item.value === '済' ? '受付済' : '取消') + '</span>';
-      list.appendChild(el);
-    });
-  }
-
-  document.getElementById('queue-panel').classList.add('active');
-}
-
 // ============================================================
 //  統計
 // ============================================================
@@ -1256,22 +1301,13 @@ function updateStats(stats) {
   if (!stats) return;
   const total = stats.total || 0;
   const done  = stats.done  || 0;
-  const countEl = document.getElementById('plane-count') || document.getElementById('checkin-count');
-  const barEl   = document.getElementById('plane-bar')   || document.getElementById('checkin-bar');
-  if (countEl) countEl.textContent = done + '/' + total;
-  if (barEl)   barEl.style.width   = (total ? done/total*100 : 0) + '%';
-  // art側はゼロクリア（使用しない）
-  const artCount = document.getElementById('art-count');
-  const artBar   = document.getElementById('art-bar');
-  if (artCount) artCount.textContent = '';
-  if (artBar)   artBar.style.width   = '0%';
+  document.getElementById('checkin-count').textContent = done + '/' + total;
+  document.getElementById('checkin-bar').style.width   = (total ? done/total*100 : 0) + '%';
 }
 
 async function updateLocalStats() {
-  const all       = await idbGetAll(STORE_PARTICIPANTS);
-  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
-  const targets   = all.filter(p => p[targetKey] === '対象');
-  const stats     = { total: targets.length, done: targets.filter(p => p.受付 === '済').length };
+  const all   = await idbGetAll(STORE_PARTICIPANTS);
+  const stats = { total: all.length, done: all.filter(p => p.受付 === '済').length };
   updateStats(stats);
 }
 
@@ -1332,13 +1368,7 @@ function showAddMemberForm(famId, refMember) {
           '<input type="hidden" id="new-tel"    value="' + telVal    + '">' +
           '<input type="hidden" id="new-type"   value="' + typeVal   + '">'
       ) +
-      '<div class="full">' +
-        '<div class="form-label">対象イベント</div>' +
-        '<div class="checkbox-row">' +
-          '<label class="checkbox-label"><input type="checkbox" id="new-plane" checked> 🔭 プラネタリウム</label>' +
-          '<label class="checkbox-label"><input type="checkbox" id="new-art"   checked> 🎨 作品展</label>' +
-        '</div>' +
-      '</div>' +
+
     '</div>' +
     '<div style="display:flex;gap:8px;">' +
       '<button class="btn btn-primary" id="submit-add" style="flex:1">登録する</button>' +
@@ -1359,8 +1389,7 @@ async function submitAddForm() {
   const name  = document.getElementById('new-name').value.trim();
   if (!famId || !pid || !name) { showToast('氏名は必須です', 'error'); return; }
 
-  const planeTarget = document.getElementById('new-plane').checked ? '対象' : '-';
-  const artTarget   = document.getElementById('new-art').checked   ? '対象' : '-';
+
 
   const rec = {
     家族ID: famId, 個人ID: pid, 氏名: name,
@@ -1369,9 +1398,8 @@ async function submitAddForm() {
     事業所:     document.getElementById('new-office').value.trim(),
     電話番号:   document.getElementById('new-tel').value.trim(),
     参加形態:   document.getElementById('new-type').value,
-    プラネ鑑賞: planeTarget,
-    作品展:     artTarget,
-    受付: '未', 体温: '', 最終更新日時: ''
+    受付: '未',
+    体温: '', 最終更新日時: new Date().toISOString()
   };
 
   await idbPut(STORE_PARTICIPANTS, rec);
@@ -1390,8 +1418,7 @@ async function submitAddForm() {
 
   document.getElementById('add-form-el')?.remove();
   await buildOfficeFilter();
-  await updateLocalStats();
-  await search();
+  updateLocalStats();
 }
 
 // ============================================================
@@ -1564,7 +1591,7 @@ async function clearAllData() {
   await idbClear(STORE_PARTICIPANTS);
   await idbClear(STORE_QUEUE);
   renderFamilies({}, false);
-  updateStats({ total: 0, done: 0 });
+  updateStats({ total:0, done:0 });
   updateQueueBadge();
   showToast('全データを消去しました', 'info');
 }
@@ -1613,14 +1640,7 @@ function updateOnlineStatus() {
 // ============================================================
 function bindEvents() {
   // タブ切替
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentEvent = btn.dataset.event;
-      search(); // タブ切替時も再描画
-    });
-  });
+  
 
   // 氏名入力：Enterキーまたは入力が止まったら検索
   let searchTimer = null;
@@ -1634,6 +1654,9 @@ function bindEvents() {
 
   // 事業所プルダウン変更時に即検索
   document.getElementById('filter-office').addEventListener('change', () => { search(); });
+
+  // 利用児童フィルタ
+  document.getElementById('filter-child-only').addEventListener('change', () => { search(); });
 
   // 「全事業所」が選択済みのまま再タップされても検索リフレッシュ
   document.getElementById('filter-office').addEventListener('click', () => {
@@ -1672,15 +1695,6 @@ function bindEvents() {
     );
   });
 
-  // キューバッジ → キューパネル表示
-  document.getElementById('queue-badge').addEventListener('click', showQueueModal);
-  document.getElementById('close-queue').addEventListener('click', () => {
-    document.getElementById('queue-panel').classList.remove('active');
-  });
-  document.getElementById('queue-panel').addEventListener('click', e => {
-    if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
-  });
-
   // モーダル
   document.getElementById('modal-cancel').addEventListener('click', () => {
     document.getElementById('confirm-modal').classList.remove('active');
@@ -1697,11 +1711,45 @@ function bindEvents() {
 }
 
 // ============================================================
+//  テーマ切り替え
+// ============================================================
+function setTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('theme-light');
+  } else {
+    document.body.classList.remove('theme-light');
+  }
+  // ボタンのactive状態を更新
+  document.getElementById('theme-dark') .classList.toggle('btn-primary', theme === 'dark');
+  document.getElementById('theme-light').classList.toggle('btn-primary', theme === 'light');
+  document.getElementById('theme-dark') .classList.toggle('btn-ghost',   theme !== 'dark');
+  document.getElementById('theme-light').classList.toggle('btn-ghost',   theme !== 'light');
+  // IndexedDBに保存
+  setMeta('theme', theme);
+}
+
+// ============================================================
 //  初期化
 // ============================================================
+// ============================================================
+//  自動ポーリング（30秒ごと・操作中スキップ）
+// ============================================================
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(async () => {
+    if (!navigator.onLine || !state.gasUrl || !state.apiKey) return;
+    if (isUserActive) return;
+    await fetchAllData(true);
+  }, 30000);
+}
+
 async function init() {
   db = await openDB();
   await loadSettings();
+
+  // テーマ復元
+  const savedTheme = await getMeta('theme') || 'dark';
+  setTheme(savedTheme);
   await buildOfficeFilter();
   await updateLocalStats();
   await updateQueueBadge();
@@ -1718,6 +1766,7 @@ async function init() {
     // 起動時にすでにデータがあれば全員表示
     await search();
   }
+  startPolling();
 }
 
 init().catch(e => {
