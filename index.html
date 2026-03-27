@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a1f35">
 <title>イベント受付システム</title>
+
 <!-- PWA manifest インライン（GAS配信対応） -->
 <link rel="manifest" href="data:application/json;charset=utf-8,{
   &quot;name&quot;:&quot;イベント受付システム&quot;,
@@ -16,6 +17,7 @@
   &quot;background_color&quot;:&quot;#1a1f35&quot;,
   &quot;theme_color&quot;:&quot;#1a1f35&quot;
 }">
+
 <style>
 /* ============================================================
    DESIGN: 深夜の宇宙 × 実務クリーン
@@ -23,9 +25,10 @@
    - アクセントは惑星のような琥珀〜ゴールド
    - 児童福祉らしい温かみをゴールドで表現
    ============================================================ */
+
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Orbitron:wght@600&display=swap');
+
 :root {
-  /* ダークテーマ（デフォルト：深夜の宇宙） */
   --bg-deep:     #0d1117;
   --bg-mid:      #1a1f35;
   --bg-card:     #1e2540;
@@ -34,7 +37,7 @@
   --accent2:     #f7c948;
   --teal:        #3dd6c8;
   --red:         #ff5f6d;
-  --green:       #2dbb6a;
+  --green:       #4ade80;
   --text-main:   #e8eaf6;
   --text-sub:    #8892b0;
   --text-muted:  #4a5270;
@@ -42,29 +45,10 @@
   --shadow:      0 8px 32px rgba(0,0,0,0.5);
   --radius:      14px;
   --radius-sm:   8px;
-  --header-bg:   linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
-  --header-border: #2a3255;
 }
-/* ライトテーマ */
-body.theme-light {
-  --bg-deep:     #f0f4f8;
-  --bg-mid:      #ffffff;
-  --bg-card:     #ffffff;
-  --bg-card2:    #f7f9fc;
-  --accent:      #0070f3;
-  --accent2:     #338ef7;
-  --teal:        #0e9de2;
-  --red:         #e53e3e;
-  --green:       #1a9e4a;
-  --text-main:   #1a202c;
-  --text-sub:    #4a5568;
-  --text-muted:  #a0aec0;
-  --border:      #e2e8f0;
-  --shadow:      0 4px 16px rgba(0,0,0,0.1);
-  --header-bg:   linear-gradient(135deg, #1a56db 0%, #0e3fa5 100%);
-  --header-border: #1a4dbe;
-}
+
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
 html, body {
   height: 100%;
   font-family: 'Noto Sans JP', sans-serif;
@@ -72,7 +56,8 @@ html, body {
   color: var(--text-main);
   overflow: hidden;
 }
-/* 星空背景（ダークテーマのみ） */
+
+/* 星空背景 */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -80,9 +65,8 @@ body::before {
     radial-gradient(ellipse at 20% 10%, rgba(61,214,200,0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(240,165,0,0.05) 0%, transparent 50%);
   pointer-events: none;
-  transition: opacity 0.3s;
 }
-body.theme-light::before { opacity: 0; }
+
 #stars {
   position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background-image:
@@ -96,26 +80,8 @@ body.theme-light::before { opacity: 0; }
     radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.3) 0%, transparent 100%),
     radial-gradient(2px 2px at 90% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
     radial-gradient(2px 2px at 5%  40%, rgba(255,255,255,0.4) 0%, transparent 100%);
-  transition: opacity 0.3s;
 }
-body.theme-light #stars { opacity: 0; }
-/* ライトテーマ時のヘッダー文字色（白に固定） */
-body.theme-light .logo,
-body.theme-light .status-badge.online,
-body.theme-light .status-badge.offline,
-body.theme-light #open-settings,
-body.theme-light .queue-badge {
-  color: rgba(255,255,255,0.9) !important;
-  border-color: rgba(255,255,255,0.3) !important;
-  background: rgba(255,255,255,0.1) !important;
-}
-body.theme-light .progress-item {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.25);
-}
-body.theme-light .progress-label,
-body.theme-light .progress-num { color: rgba(255,255,255,0.9); }
-body.theme-light .progress-bar-wrap { background: rgba(255,255,255,0.2); }
+
 /* ---- レイアウト ---- */
 #app {
   position: relative; z-index: 1;
@@ -123,29 +89,35 @@ body.theme-light .progress-bar-wrap { background: rgba(255,255,255,0.2); }
   height: 100vh; height: 100dvh;
   max-width: 768px; margin: 0 auto;
 }
+
 /* ---- ヘッダー ---- */
 header {
-  background: var(--header-bg);
-  border-bottom: 1px solid var(--header-border);
+  background: linear-gradient(135deg, #1a1f35 0%, #0d1117 100%);
+  border-bottom: 1px solid var(--border);
   padding: 12px 16px;
   flex-shrink: 0;
 }
+
 .header-top {
   display: flex; align-items: center; justify-content: space-between;
   gap: 8px;
 }
+
 .header-title {
   display: flex; align-items: center; gap: 10px;
 }
+
 .logo {
   font-family: 'Orbitron', sans-serif;
   font-size: 11px; letter-spacing: 2px;
   color: var(--accent); opacity: 0.85;
   white-space: nowrap;
 }
+
 .header-right {
   display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
+
 /* 接続ステータス */
 .status-badge {
   display: flex; align-items: center; gap: 5px;
@@ -158,6 +130,7 @@ header {
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .status-badge.online .status-dot { animation: pulse-dot 2s infinite; }
 @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
 /* キューバッジ */
 .queue-badge {
   display: none; align-items: center; gap: 4px;
@@ -166,6 +139,7 @@ header {
   border-radius: 20px; padding: 4px 9px; font-size: 11px; font-weight: 700;
 }
 .queue-badge.visible { display: flex; }
+
 /* 進捗カウンター */
 .progress-row {
   display: flex; gap: 8px; margin-top: 10px;
@@ -179,6 +153,7 @@ header {
 .progress-bar-wrap { flex: 1; height: 5px; background: var(--bg-mid); border-radius: 3px; overflow: hidden; }
 .progress-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--teal), var(--accent)); transition: width 0.6s ease; }
 .progress-num { font-size: 11px; font-weight: 700; color: var(--text-main); white-space: nowrap; }
+
 /* ---- タブ ---- */
 .tabs {
   display: flex; border-bottom: 1px solid var(--border);
@@ -197,13 +172,16 @@ header {
   transform: scaleX(0); transition: transform 0.25s;
 }
 .tab-btn.active::after { transform: scaleX(1); }
+
 /* ---- 検索エリア ---- */
 .search-area {
   background: var(--bg-mid); border-bottom: 1px solid var(--border);
   padding: 12px 14px; flex-shrink: 0;
   display: flex; flex-direction: column; gap: 8px;
 }
+
 .search-row { display: flex; gap: 8px; }
+
 .input-wrap {
   flex: 1; position: relative;
 }
@@ -219,10 +197,12 @@ header {
   border-color: var(--accent);
 }
 .input-wrap input::placeholder { color: var(--text-muted); }
+
 .select-arrow {
   position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
   color: var(--text-sub); pointer-events: none; font-size: 11px;
 }
+
 .btn {
   padding: 10px 16px; border: none; border-radius: var(--radius-sm);
   font-size: 13px; font-weight: 700; cursor: pointer;
@@ -232,15 +212,6 @@ header {
 .btn:active { transform: scale(0.96); }
 .btn-primary { background: var(--accent); color: #111; }
 .btn-primary:hover { background: var(--accent2); }
-body.theme-light .btn-primary { color: #fff; }
-body.theme-light .btn-primary:hover { background: var(--accent2); }
-body.theme-light .btn-teal {
-  background: var(--teal); color: #fff; border-color: var(--teal);
-}
-body.theme-light .btn-teal:hover { background: var(--accent2); border-color: var(--accent2); }
-body.theme-light .btn-qr {
-  background: var(--teal); color: #fff; border-color: var(--teal);
-}
 .btn-teal { background: rgba(61,214,200,0.15); color: var(--teal); border: 1px solid rgba(61,214,200,0.3); }
 .btn-teal:hover { background: rgba(61,214,200,0.25); }
 .btn-ghost { background: var(--bg-card2); color: var(--text-sub); border: 1px solid var(--border); }
@@ -248,17 +219,20 @@ body.theme-light .btn-qr {
 .btn-danger { background: rgba(255,95,109,0.15); color: var(--red); border: 1px solid rgba(255,95,109,0.3); }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-xs { padding: 4px 9px; font-size: 11px; }
+
 /* QRスキャンボタン */
 .btn-qr {
   background: linear-gradient(135deg, #1e2540, #252d4a);
   color: var(--teal); border: 1px solid rgba(61,214,200,0.4);
   display: flex; align-items: center; gap: 6px;
 }
+
 /* ---- メインコンテンツ ---- */
 .main-content {
   flex: 1; overflow-y: auto; padding: 12px 14px;
   -webkit-overflow-scrolling: touch;
 }
+
 /* ---- カメラビュー ---- */
 #camera-view {
   display: none; flex-direction: column; gap: 12px;
@@ -286,6 +260,7 @@ body.theme-light .btn-qr {
 .qr-corner.tr { top: 8px; right: 8px; border-width: 3px 3px 0 0; }
 .qr-corner.bl { bottom: 8px; left: 8px;  border-width: 0 0 3px 3px; }
 .qr-corner.br { bottom: 8px; right: 8px; border-width: 0 3px 3px 0; }
+
 /* スキャンライン */
 .scan-line {
   position: absolute; left: 8px; right: 8px; height: 2px;
@@ -298,7 +273,9 @@ body.theme-light .btn-qr {
   90%  { top: 85%; opacity: 1; }
   100% { top: 85%; opacity: 0; }
 }
+
 .qr-hint { color: var(--text-sub); font-size: 13px; text-align: center; }
+
 /* ---- ファミリーカード ---- */
 .family-section {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -306,29 +283,28 @@ body.theme-light .btn-qr {
   animation: slideUp 0.3s ease;
 }
 @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
 .family-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 14px; border-bottom: 1px solid var(--border);
   background: var(--bg-card2);
 }
+
 .family-id-badge {
   font-size: 11px; color: var(--accent); font-weight: 700;
   background: rgba(240,165,0,0.1); border: 1px solid rgba(240,165,0,0.25);
   border-radius: 4px; padding: 2px 7px; font-family: 'Orbitron', sans-serif;
-}
-.family-seat {
-  font-size: 12px; font-weight: 900; color: var(--accent);
-  background: rgba(240,165,0,0.12); border: 1px solid rgba(240,165,0,0.3);
-  border-radius: 4px; padding: 2px 8px; margin-left: 8px;
 }
 .family-tel {
   font-size: 12px; color: var(--teal); text-decoration: none;
   opacity: 0.85; margin-left: 8px;
 }
 .family-tel:hover { opacity: 1; text-decoration: underline; }
+
 .family-checkin-all {
   display: flex; gap: 6px;
 }
+
 /* ---- 個人行 ---- */
 .person-row {
   display: flex; align-items: center; gap: 10px;
@@ -337,6 +313,7 @@ body.theme-light .btn-qr {
 }
 .person-row:last-child { border-bottom: none; }
 .person-row:hover { background: rgba(255,255,255,0.02); }
+
 .person-avatar {
   width: 34px; height: 34px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -345,10 +322,13 @@ body.theme-light .btn-qr {
 .avatar-child    { background: rgba(61,214,200,0.15); color: var(--teal); }
 .avatar-parent   { background: rgba(240,165,0,0.15);  color: var(--accent); }
 .avatar-sibling  { background: rgba(139,92,246,0.15); color: #a78bfa; }
+
 .person-info { flex: 1; min-width: 0; }
 .person-name { font-size: 14px; font-weight: 700; }
 .person-meta { font-size: 11px; color: var(--text-sub); margin-top: 1px; }
+
 .person-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+
 /* チェックインボタン */
 .checkin-btn {
   padding: 6px 11px; border-radius: var(--radius-sm);
@@ -367,6 +347,7 @@ body.theme-light .btn-qr {
 .checkin-btn.done {
   background: rgba(74,222,128,0.1); color: var(--green); border-color: rgba(74,222,128,0.3);
 }
+
 /* 体温入力 */
 .temp-input {
   width: 72px; background: var(--bg-mid); border: 1px solid var(--border);
@@ -376,15 +357,7 @@ body.theme-light .btn-qr {
   -webkit-appearance: none; appearance: none; cursor: pointer;
 }
 .temp-input:focus { border-color: var(--accent); }
-.temp-input.temp-required {
-  border-color: var(--red) !important;
-  background: rgba(255,95,109,0.08);
-  animation: tempPulse 2s ease-in-out infinite;
-}
-@keyframes tempPulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,95,109,0); }
-  50%      { box-shadow: 0 0 0 3px rgba(255,95,109,0.3); }
-}
+
 /* ---- 新規追加フォーム ---- */
 .add-form {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -413,6 +386,7 @@ body.theme-light .btn-qr {
   font-size: 13px; cursor: pointer; color: var(--text-main);
 }
 .checkbox-label input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+
 /* ---- 設定パネル ---- */
 .settings-panel {
   display: none; position: fixed; inset: 0; z-index: 200;
@@ -429,12 +403,14 @@ body.theme-light .btn-qr {
   margin-bottom: 14px;
 }
 .settings-row label { font-size: 12px; color: var(--text-sub); display: block; margin-bottom: 5px; }
+
 /* ---- ローディング ---- */
 .spinner {
   display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border);
   border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
 /* ---- トースト通知 ---- */
 #toast-area {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -451,12 +427,14 @@ body.theme-light .btn-qr {
 .toast.info    { background: rgba(240,165,0,0.9); color: #111; }
 @keyframes toastIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+
 /* ---- 空状態 ---- */
 .empty-state {
   text-align: center; padding: 48px 20px; color: var(--text-muted);
 }
 .empty-icon { font-size: 42px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 14px; }
+
 /* ---- モーダル（確認） ---- */
 .modal-overlay {
   display: none; position: fixed; inset: 0; z-index: 400;
@@ -472,43 +450,34 @@ body.theme-light .btn-qr {
 .modal-box p  { font-size: 13px; color: var(--text-sub); margin-bottom: 18px; line-height: 1.6; }
 .modal-actions { display: flex; gap: 8px; }
 .modal-actions .btn { flex: 1; }
-/* ---- 最終同期表示 ---- */
-.last-sync {
-  font-size: 10px; color: var(--text-muted); text-align: right;
-  margin-top: 6px; transition: color 0.3s;
+
+/* ---- キューパネル ---- */
+.queue-panel {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(13,17,23,0.9); align-items: flex-end;
 }
-body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
-/* ---- 検索クリアボタン ---- */
-.search-wrap { flex: 1; position: relative; }
-.search-wrap input {
-  width: 100%; background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius-sm); padding: 10px 32px 10px 12px;
-  color: var(--text-main); font-size: 14px;
-  font-family: 'Noto Sans JP', sans-serif;
-  outline: none; transition: border-color 0.2s;
-  -webkit-appearance: none; appearance: none;
+.queue-panel.active { display: flex; }
+.queue-panel-inner {
+  width: 100%; max-width: 768px; margin: 0 auto;
+  background: var(--bg-card); border-radius: var(--radius) var(--radius) 0 0;
+  padding: 20px; border: 1px solid var(--border); border-bottom: none;
+  max-height: 70vh; display: flex; flex-direction: column;
 }
-.search-wrap input:focus { border-color: var(--accent); }
-.search-wrap input::placeholder { color: var(--text-muted); }
-.search-clear {
-  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--text-muted); color: var(--bg-card); border: none;
-  font-size: 13px; line-height: 22px; text-align: center;
-  cursor: pointer; display: none; padding: 0;
-  font-family: 'Noto Sans JP', sans-serif;
+.queue-panel-inner h2 { font-size: 15px; margin-bottom: 12px; color: var(--accent); flex-shrink: 0; }
+.queue-list { overflow-y: auto; flex: 1; }
+.queue-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px;
 }
-.search-clear.visible { display: block; }
-.search-clear:hover { background: var(--text-sub); }
-/* ---- 受付時刻表示 ---- */
-.checkin-time {
-  font-size: 10px; color: var(--green); opacity: 0.8;
-  white-space: nowrap;
-}
-/* ---- フィルタ行の折り返し対応 ---- */
-.filter-row {
-  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-}
+.queue-item:last-child { border-bottom: none; }
+.queue-item-name { flex: 1; font-weight: 700; }
+.queue-item-meta { font-size: 11px; color: var(--text-sub); }
+.queue-item-value { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.queue-item-value.done  { background: rgba(74,222,128,0.15); color: var(--green); }
+.queue-item-value.undone { background: rgba(255,95,109,0.15); color: var(--red); }
+.queue-badge { cursor: pointer; }
+
 /* ---- スクロールバー ---- */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -516,7 +485,9 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
 </style>
 </head>
 <body>
+
 <div id="stars"></div>
+
 <!-- カメラビュー -->
 <div id="camera-view">
   <div class="qr-overlay">
@@ -532,6 +503,7 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
   <p class="qr-hint">QRコードをカメラに向けてください</p>
   <button class="btn btn-ghost" id="close-camera">キャンセル</button>
 </div>
+
 <!-- 設定パネル -->
 <div class="settings-panel" id="settings-panel">
   <div class="settings-inner">
@@ -553,16 +525,20 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
       <button class="btn btn-ghost btn-sm" id="refresh-data">🔄 データ再取得</button>
       <button class="btn btn-danger btn-sm" id="clear-data">🗑 全データ消去</button>
     </div>
-    <hr style="border-color:var(--border);margin:16px 0;">
-    <div class="settings-row">
-      <label>配色テーマ</label>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-ghost btn-sm theme-toggle-btn" id="theme-dark" onclick="setTheme('dark')">🌙 ダーク</button>
-        <button class="btn btn-ghost btn-sm theme-toggle-btn" id="theme-light" onclick="setTheme('light')">☀️ ライト</button>
-      </div>
+  </div>
+</div>
+
+<!-- キューパネル -->
+<div class="queue-panel" id="queue-panel">
+  <div class="queue-panel-inner">
+    <h2>📤 送信待ちキュー</h2>
+    <div class="queue-list" id="queue-list"></div>
+    <div style="margin-top:14px; flex-shrink:0;">
+      <button class="btn btn-ghost" id="close-queue" style="width:100%">閉じる</button>
     </div>
   </div>
 </div>
+
 <!-- 確認モーダル -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal-box">
@@ -574,6 +550,7 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
     </div>
   </div>
 </div>
+
 <!-- メインアプリ -->
 <div id="app">
   <header>
@@ -594,24 +571,34 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
     </div>
     <div class="progress-row">
       <div class="progress-item">
-        <span class="progress-label">✅ 受付</span>
+        <span class="progress-label">🔭 プラネ</span>
         <div class="progress-bar-wrap">
-          <div class="progress-bar" id="checkin-bar" style="width:0%"></div>
+          <div class="progress-bar" id="plane-bar" style="width:0%"></div>
         </div>
-        <span class="progress-num" id="checkin-count">0/0</span>
+        <span class="progress-num" id="plane-count">0/0</span>
+      </div>
+      <div class="progress-item">
+        <span class="progress-label">🎨 作品展</span>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="art-bar" style="width:0%"></div>
+        </div>
+        <span class="progress-num" id="art-count">0/0</span>
       </div>
     </div>
-    <div class="last-sync" id="last-sync"></div>
   </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-event="plane">🔭 プラネタリウム</button>
+    <button class="tab-btn" data-event="art">🎨 作品展</button>
+  </div>
 
   <div class="search-area">
     <div class="search-row">
       <button class="btn btn-qr" id="open-camera">
         <span>📷</span> QR読取
       </button>
-      <div class="search-wrap">
+      <div class="input-wrap" style="flex:1">
         <input type="text" id="search-name" placeholder="氏名で検索…" autocomplete="off">
-        <button class="search-clear" id="search-clear" type="button">✕</button>
       </div>
       <button class="btn btn-teal btn-sm" id="add-btn">＋ 新規</button>
     </div>
@@ -623,21 +610,8 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
         <span class="select-arrow">▼</span>
       </div>
     </div>
-    <div class="filter-row">
-      <label class="checkbox-label" style="font-size:12px; color:var(--text-sub); white-space:nowrap; cursor:pointer;">
-        <input type="checkbox" id="filter-child-only" style="accent-color:var(--accent); width:14px; height:14px;">
-        利用児童のみ
-      </label>
-      <label class="checkbox-label" style="font-size:12px; color:var(--text-sub); white-space:nowrap; cursor:pointer;">
-        <input type="checkbox" id="filter-undone-only" style="accent-color:var(--red); width:14px; height:14px;">
-        未受付のみ
-      </label>
-      <label class="checkbox-label" style="font-size:12px; color:var(--text-sub); white-space:nowrap; cursor:pointer;">
-        <input type="checkbox" id="filter-no-temp" style="accent-color:var(--accent2); width:14px; height:14px;">
-        体温未入力
-      </label>
-    </div>
   </div>
+
   <div class="main-content" id="main-content">
     <div class="empty-state" id="empty-state">
       <div class="empty-icon">🔭</div>
@@ -645,13 +619,16 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
     </div>
   </div>
 </div>
+
 <div id="toast-area"></div>
+
 <!-- jsQR: BarcodeDetector非対応環境（PC等）のフォールバック用 -->
 <!-- オフライン時はBarcodeDetectorを使うためjsQRは不要 -->
 <script>
 (function() {
   if ('BarcodeDetector' in window) return; // BarcodeDetector対応なら不要
   if (!navigator.onLine) return;           // オフライン時はロードしない
+
   const cdns = [
     'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js',
     'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js',
@@ -668,24 +645,28 @@ body.theme-light .last-sync { color: rgba(255,255,255,0.6); }
   tryNext();
 })();
 </script>
+
 <script>
 // ============================================================
-//  イベント受付システム - フロントエンド (v3.2 機能追加版)
+//  イベント受付システム - フロントエンド (v3 全面リライト)
 // ============================================================
+
 const DB_NAME            = 'EventCheckin';
 const DB_VERSION         = 1;
 const STORE_PARTICIPANTS = 'participants';
 const STORE_QUEUE        = 'syncQueue';
 const STORE_META         = 'meta';
-let db           = null;
-// イベントタブ廃止：一括受付に統合
-let isSyncing    = false;
-let qrStream     = null;
-let qrInterval   = null;
-let pollTimer       = null;   // 自動ポーリング用
-let isUserActive    = false;  // 体温入力などの操作中フラグ
-let currentFamilyId = null;   // QRスキャンで絞り込み中の家族ID（nullなら全件表示）
+
+let db              = null;
+let currentEvent    = 'plane';
+let isSyncing       = false;
+let qrStream        = null;
+let qrInterval      = null;
+let currentFamilyId = null;   // QRスキャンで絞り込み中の家族ID
+let dismissTimer    = null;   // カード自動消去タイマー
+
 const state = { gasUrl: '', apiKey: '' };
+
 // ============================================================
 //  IndexedDB ユーティリティ
 // ============================================================
@@ -705,6 +686,7 @@ function openDB() {
     req.onerror   = e => reject(e.target.error);
   });
 }
+
 function idbGetAll(storeName) {
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(storeName, 'readonly');
@@ -713,6 +695,7 @@ function idbGetAll(storeName) {
     req.onerror   = () => reject(req.error);
   });
 }
+
 function idbPut(storeName, obj) {
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(storeName, 'readwrite');
@@ -721,6 +704,7 @@ function idbPut(storeName, obj) {
     req.onerror   = () => reject(req.error);
   });
 }
+
 function idbDelete(storeName, key) {
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(storeName, 'readwrite');
@@ -729,6 +713,7 @@ function idbDelete(storeName, key) {
     req.onerror   = () => reject(req.error);
   });
 }
+
 function idbClear(storeName) {
   return new Promise((resolve, reject) => {
     const tx  = db.transaction(storeName, 'readwrite');
@@ -737,6 +722,7 @@ function idbClear(storeName) {
     req.onerror   = () => reject(req.error);
   });
 }
+
 async function getMeta(key) {
   const all = await idbGetAll(STORE_META);
   const rec = all.find(r => r.key === key);
@@ -745,6 +731,7 @@ async function getMeta(key) {
 async function setMeta(key, value) {
   await idbPut(STORE_META, { key, value });
 }
+
 // ============================================================
 //  設定
 // ============================================================
@@ -754,6 +741,7 @@ async function loadSettings() {
   document.getElementById('cfg-url').value = state.gasUrl;
   document.getElementById('cfg-key').value = state.apiKey;
 }
+
 async function saveSettings() {
   state.gasUrl = document.getElementById('cfg-url').value.trim();
   state.apiKey = document.getElementById('cfg-key').value.trim();
@@ -761,6 +749,7 @@ async function saveSettings() {
   await setMeta('apiKey', state.apiKey);
   showToast('設定を保存しました', 'success');
 }
+
 // ============================================================
 //  GAS API
 // ============================================================
@@ -773,6 +762,7 @@ async function gasGet(params = {}) {
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
+
 async function gasPost(body) {
   if (!state.gasUrl) throw new Error('GAS URLが未設定です');
   const res = await fetch(state.gasUrl, {
@@ -784,35 +774,33 @@ async function gasPost(body) {
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
+
 // ============================================================
 //  データ取得・同期
 // ============================================================
-async function fetchAllData(silent = false) {
+async function fetchAllData() {
   if (!state.gasUrl || !state.apiKey) {
-    if (!silent) {
-      showToast('⚙️ 設定からURLとAPIキーを入力してください', 'info');
-      document.getElementById('settings-panel').classList.add('active');
-    }
+    showToast('⚙️ 設定からURLとAPIキーを入力してください', 'info');
+    document.getElementById('settings-panel').classList.add('active');
     return;
   }
-  if (!silent) showToast('データを取得中…', 'info');
+  showToast('データを取得中…', 'info');
   try {
     const data = await gasGet();
     if (data.error) throw new Error(data.error);
     await idbClear(STORE_PARTICIPANTS);
     for (const p of data.participants) await idbPut(STORE_PARTICIPANTS, p);
-    const syncTime = new Date().toISOString();
-    await setMeta('lastSync', syncTime);
-    updateLastSyncDisplay(syncTime);
+    await setMeta('lastSync', new Date().toISOString());
     updateStats(data.stats);
     await buildOfficeFilter();
-    if (!silent) showToast(data.participants.length + '件取得しました', 'success');
-    // 操作中でなければUIも更新
-    if (!isUserActive) await refreshDisplay();
+    showToast(data.participants.length + '件取得しました', 'success');
+    // 取得完了後に全員を一覧表示
+    await search();
   } catch (e) {
-    if (!silent) showToast('取得失敗: ' + e.message, 'error');
+    showToast('取得失敗: ' + e.message, 'error');
   }
 }
+
 // ============================================================
 //  事業所フィルタ構築
 // ============================================================
@@ -829,36 +817,26 @@ async function buildOfficeFilter() {
     sel.appendChild(opt);
   });
 }
-// ============================================================
-//  表示リフレッシュ（QR絞り込み中は維持、そうでなければ全件検索）
-// ============================================================
-async function refreshDisplay() {
-  if (currentFamilyId) {
-    const all   = await idbGetAll(STORE_PARTICIPANTS);
-    const group = all.filter(p => String(p.家族ID || '').trim() === currentFamilyId);
-    const fams  = {};
-    fams[currentFamilyId] = group;
-    renderFamilies(fams, true);
-  } else {
-    await search();
-  }
-}
+
 // ============================================================
 //  検索（核心ロジック）
 // ============================================================
 async function search() {
-  currentFamilyId = null; // 手動検索時はQR絞り込みを解除
-  const name      = document.getElementById('search-name').value.trim();
-  const office    = document.getElementById('filter-office').value.trim();
-  const childOnly  = document.getElementById('filter-child-only').checked;
-  const undoneOnly = document.getElementById('filter-undone-only').checked;
-  const noTempOnly = document.getElementById('filter-no-temp').checked;
+  // 手動検索時は自動消去タイマーをキャンセル
+  if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null; }
+  currentFamilyId = null;
+
+  const name   = document.getElementById('search-name').value.trim();
+  const office = document.getElementById('filter-office').value.trim();
+
   let all = await idbGetAll(STORE_PARTICIPANTS);
-  if (office)     all = all.filter(p => (p.事業所 || '').trim() === office);
-  if (name)       all = all.filter(p => (p.氏名   || '').includes(name));
-  if (childOnly)  all = all.filter(p => (p.区分   || '') === '利用児童');
-  if (undoneOnly) all = all.filter(p => p.受付 !== '済');
-  if (noTempOnly) all = all.filter(p => p.受付 === '済' && p.区分 === '利用児童' && !p.体温);
+  console.log('[search] total records:', all.length, '| office:', office, '| name:', name);
+
+  if (office) all = all.filter(p => (p.事業所 || '').trim() === office);
+  if (name)   all = all.filter(p => (p.氏名   || '').includes(name));
+
+  console.log('[search] filtered:', all.length);
+
   // 家族IDでグループ化
   const families = {};
   all.forEach(p => {
@@ -866,22 +844,30 @@ async function search() {
     if (!families[fid]) families[fid] = [];
     families[fid].push(p);
   });
+
   renderFamilies(families, !!(name || office));
 }
+
 // ============================================================
 //  QRスキャン後の処理
 // ============================================================
 async function handleFamilyId(familyId) {
   closeCameraView();
-  // ① まずローカルデータで即表示（待ち時間ゼロ）
+
+  // 既存タイマーをリセット
+  if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null; }
+
+  // ① ローカルデータで即座に検索
   const all   = await idbGetAll(STORE_PARTICIPANTS);
   const group = all.filter(p => String(p.家族ID || '').trim() === familyId.trim());
+
   if (group.length === 0) {
     showToast('該当する家族が見つかりません: ' + familyId, 'error');
     return;
   }
-  // ② タイムスタンプが空の人だけ自動受付（済 + タイムスタンプ記録）
-  const now        = new Date().toISOString();
+
+  // ② 最終更新日時が空の人だけ自動受付（初回のみ）
+  const now         = new Date().toISOString();
   const autoCheckin = group.filter(m => !m.最終更新日時);
   if (autoCheckin.length > 0) {
     for (const member of autoCheckin) {
@@ -900,18 +886,34 @@ async function handleFamilyId(familyId) {
       updateQueueBadge();
     }
   }
-  // ③ 最新ローカルデータで表示（QR絞り込み状態をセット）
+
+  // ③ 最新データで表示
   currentFamilyId = familyId.trim();
-  const latest = await idbGetAll(STORE_PARTICIPANTS);
+  const latest   = await idbGetAll(STORE_PARTICIPANTS);
   const newGroup = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
   const families = {};
   families[familyId] = newGroup;
   renderFamilies(families, true);
-  // QR受付時にバイブレーション
+
   if (navigator.vibrate) navigator.vibrate(autoCheckin.length > 0 ? [100, 50, 100] : 80);
-  const autoMsg = autoCheckin.length > 0 ? `（${autoCheckin.length}名を自動受付）` : '（受付済みのためスキップ）';
-  showToast(newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名を表示 ' + autoMsg, 'success');
-  // ④ バックグラウンドでGASから最新データを取得して差分更新
+  if (autoCheckin.length > 0) {
+    showToast(newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名（' + autoCheckin.length + '名を自動受付）', 'success');
+  } else {
+    showToast('⚠️ ' + newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名（再スキャン - 受付状況を確認）', 'info');
+  }
+
+  // ④ 60秒後に自動クリア（操作中は延長）
+  function scheduleDismiss() {
+    dismissTimer = setTimeout(async () => {
+      if (isUserActive) { scheduleDismiss(); return; }
+      currentFamilyId = null;
+      dismissTimer    = null;
+      await search();
+    }, 60000);
+  }
+  scheduleDismiss();
+
+  // ⑤ バックグラウンドでGASから最新データを取得して差分更新
   if (navigator.onLine && state.gasUrl) {
     gasGet({ familyId }).then(async data => {
       if (!data.error && data.participants) {
@@ -934,14 +936,18 @@ async function handleFamilyId(familyId) {
     }).catch(() => {});
   }
 }
+
 // ============================================================
 //  レンダリング（シンプルに作り直し）
 // ============================================================
 function renderFamilies(families, hasSearch) {
   const container = document.getElementById('main-content');
+
   // ① コンテナを完全クリア
   container.innerHTML = '';
+
   const keys = Object.keys(families);
+
   if (keys.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
@@ -953,11 +959,13 @@ function renderFamilies(families, hasSearch) {
     container.appendChild(empty);
     return;
   }
+
   keys.forEach(famId => {
     const card = buildFamilyCard(famId, families[famId]);
-    container.appendChild(card);
+    if (card) container.appendChild(card); // 対象者ゼロのカードはスキップ
   });
 }
+
 // ============================================================
 //  家族カード
 // ============================================================
@@ -965,47 +973,66 @@ function buildFamilyCard(famId, members) {
   const section = document.createElement('div');
   section.className = 'family-section';
   section.dataset.famId = famId;
+
   const header = document.createElement('div');
   header.className = 'family-header';
+
   const badge = document.createElement('span');
   badge.className = 'family-id-badge';
   badge.textContent = famId;
-  // 電話番号（家族内の最初の電話番号をテキスト表示）
+
+  // 電話番号（家族内の最初の電話番号を使用）
   const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
-  header.appendChild(badge);
   if (tel) {
     const telEl = document.createElement('a');
     telEl.className = 'family-tel';
-    telEl.href = 'tel:' + tel;
+    telEl.href = 'tel:' + tel.replace(/[^\d+]/g, '');
     telEl.textContent = '📞 ' + tel;
+    header.appendChild(badge);
     header.appendChild(telEl);
+  } else {
+    header.appendChild(badge);
   }
+
   const btns = document.createElement('div');
   btns.className = 'family-checkin-all';
+
   const allBtn = document.createElement('button');
   allBtn.className = 'btn btn-teal btn-sm';
   allBtn.textContent = '全員 受付';
-  // [修正1] famIdだけ渡し、最新データはcheckinAll内で取得する
-  allBtn.onclick = () => checkinAll(famId, '済');
+  allBtn.onclick = () => checkinAll(famId, members, '済');
+
   const undoBtn = document.createElement('button');
   undoBtn.className = 'btn btn-ghost btn-xs';
   undoBtn.textContent = '全員 取消';
-  undoBtn.onclick = () => checkinAll(famId, '未');
+  undoBtn.onclick = () => checkinAll(famId, members, '未');
+
   const addBtn = document.createElement('button');
   addBtn.className = 'btn btn-ghost btn-xs';
   addBtn.textContent = '＋追加';
   addBtn.onclick = () => showAddMemberForm(famId, members[0]);
+
   btns.appendChild(allBtn);
   btns.appendChild(undoBtn);
   btns.appendChild(addBtn);
   header.appendChild(btns);
   section.appendChild(header);
+
   members.forEach(p => {
     const row = buildPersonRow(p);
-    section.appendChild(row);
+    if (row) section.appendChild(row); // 対象外はnullなのでスキップ
   });
+
+  // 対象者が1人もいない場合はカード自体を非表示
+  const hasTarget = members.some(p => {
+    const key = currentEvent === 'plane' ? 'プラネ鑑賞' : '作品展';
+    return p[key] === '対象';
+  });
+  if (!hasTarget) return null;
+
   return section;
 }
+
 // ============================================================
 //  個人行
 // ============================================================
@@ -1013,6 +1040,7 @@ function buildPersonRow(person) {
   const row = document.createElement('div');
   row.className = 'person-row';
   row.dataset.pid = person.個人ID;
+
   const avatar = document.createElement('div');
   avatar.className = 'person-avatar';
   if (person.区分 === '利用児童') {
@@ -1022,6 +1050,7 @@ function buildPersonRow(person) {
   } else {
     avatar.classList.add('avatar-sibling'); avatar.textContent = '🧒';
   }
+
   const info = document.createElement('div');
   info.className = 'person-info';
   const nameEl = document.createElement('div');
@@ -1032,15 +1061,10 @@ function buildPersonRow(person) {
   metaEl.textContent = (person.年齢 !== '' ? person.年齢 + '歳 ' : '') + person.区分 + ' ／ ' + person.事業所;
   info.appendChild(nameEl);
   info.appendChild(metaEl);
-  // 受付時刻の表示
-  if (person.受付 === '済' && person.最終更新日時) {
-    const timeEl = document.createElement('div');
-    timeEl.className = 'checkin-time';
-    timeEl.textContent = '受付 ' + formatTime(person.最終更新日時);
-    info.appendChild(timeEl);
-  }
+
   const actions = document.createElement('div');
   actions.className = 'person-actions';
+
   // 体温ドロップダウン（35.0〜38.9を0.1刻み）
   const tempInput = document.createElement('select');
   tempInput.className = 'temp-input';
@@ -1054,34 +1078,15 @@ function buildPersonRow(person) {
     if (String(person.体温) === v) opt.selected = true;
     tempInput.appendChild(opt);
   }
-  const isDone = person.受付 === '済';
-  // 受付済み・利用児童・体温未入力 → 赤ハイライト
-  if (isDone && person.区分 === '利用児童' && !person.体温) {
-    tempInput.classList.add('temp-required');
-  }
-  // 体温変更時の自動送信（受付済みの場合のみ、1秒デバウンス）
-  let tempTimer = null;
-  tempInput.addEventListener('focus', () => { isUserActive = true; });
-  tempInput.addEventListener('change', () => {
-    isUserActive = true;
-    if (!isDone) {
-      // [修正3] 未受付でも isUserActive を後でリセットする
-      setTimeout(() => { isUserActive = false; }, 1500);
-      return;
-    }
-    if (tempInput.value === '') return;
-    tempInput.classList.remove('temp-required'); // 入力されたので赤解除
-    clearTimeout(tempTimer);
-    tempInput.style.borderColor = 'var(--accent)';
-    tempTimer = setTimeout(async () => {
-      await saveTempOnly(person.個人ID, person.家族ID, tempInput.value);
-      tempInput.style.borderColor = 'var(--green)';
-      setTimeout(() => { tempInput.style.borderColor = ''; isUserActive = false; }, 1500);
-    }, 1000);
-  });
-  tempInput.addEventListener('blur', () => {
-    setTimeout(() => { isUserActive = false; }, 1500);
-  });
+
+  const eventKey  = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
+  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
+  const isTarget  = person[eventKey]  === '対象';
+  const isDone    = person[statusKey] === '済';
+
+  // 対象外は行ごと非表示（nullを返して呼び出し側でスキップ）
+  if (!isTarget) return null;
+
   const checkinBtn = document.createElement('button');
   checkinBtn.className = 'checkin-btn';
   if (isDone) {
@@ -1093,6 +1098,7 @@ function buildPersonRow(person) {
     checkinBtn.textContent = '未';
     checkinBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '済', tempInput.value || '');
   }
+
   actions.appendChild(tempInput);
   actions.appendChild(checkinBtn);
   row.appendChild(avatar);
@@ -1100,73 +1106,58 @@ function buildPersonRow(person) {
   row.appendChild(actions);
   return row;
 }
+
 // ============================================================
 //  チェックイン
 // ============================================================
-//  体温のみ保存（受付済み後に体温を入力したケース）
-// ============================================================
-async function saveTempOnly(個人ID, 家族ID, 体温) {
-  const now    = new Date().toISOString();
+async function checkinPerson(個人ID, 家族ID, value, 体温) {
+  const now       = new Date().toISOString();
+  const statusKey = currentEvent === 'plane' ? 'プラネ受付' : '作品展受付';
+
   const all    = await idbGetAll(STORE_PARTICIPANTS);
   const person = all.find(p => p.個人ID === 個人ID);
   if (!person) return;
-  person.体温         = 体温;
+
+  person[statusKey]    = value;
+  if (体温 !== '' && 体温 !== undefined) person.体温 = 体温;
   person.最終更新日時 = now;
   await idbPut(STORE_PARTICIPANTS, person);
-  const update = { 個人ID, value: person.受付, 体温, timestamp: now };
+
+  // 行を差分更新
+  const oldRow = document.querySelector('.person-row[data-pid="' + 個人ID + '"]');
+  if (oldRow) oldRow.replaceWith(buildPersonRow(person));
+  updateLocalStats();
+
+  const update = { 個人ID, event: currentEvent, value, 体温: 体温 !== '' ? 体温 : undefined, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
   } else {
     await idbPut(STORE_QUEUE, { ...update, queuedAt: now });
     updateQueueBadge();
   }
-}
-// ============================================================
-async function checkinPerson(個人ID, 家族ID, value, 体温) {
-  const now       = new Date().toISOString();
-  const statusKey = '受付';
-  const all    = await idbGetAll(STORE_PARTICIPANTS);
-  const person = all.find(p => p.個人ID === 個人ID);
-  if (!person) return;
-  person[statusKey]    = value;
-  if (体温 !== '' && 体温 !== undefined) person.体温 = 体温;
-  person.最終更新日時 = now;
-  await idbPut(STORE_PARTICIPANTS, person);
-  // 行を差分更新
-  const oldRow = document.querySelector('.person-row[data-pid="' + 個人ID + '"]');
-  if (oldRow) oldRow.replaceWith(buildPersonRow(person));
-  updateLocalStats();
-  // 即座にフィードバック（GAS通信を待たない）
-  if (value === '済' && navigator.vibrate) navigator.vibrate(150);
+
   showToast(
     value === '済' ? person.氏名 + 'を受付しました' : person.氏名 + 'の受付を取り消しました',
     value === '済' ? 'success' : 'info'
   );
-  // GAS送信はバックグラウンドで実行（失敗時はキューに保存）
-  const sendTemp = value === '未' ? '' : (体温 || '');
-  const update = { 個人ID, value, 体温: sendTemp, timestamp: now };
-  if (navigator.onLine && state.gasUrl) {
-    sendUpdates([update]);
-  } else {
-    await idbPut(STORE_QUEUE, { ...update, queuedAt: now });
-    updateQueueBadge();
-  }
 }
-// [修正1] checkinAll: 古いスナップショットではなくIndexedDBから最新データを取得してから更新
-async function checkinAll(famId, value) {
+
+async function checkinAll(famId, members, value) {
   const now       = new Date().toISOString();
-  const statusKey = '受付';
+  const targetKey = currentEvent === 'plane' ? 'プラネ鑑賞'  : '作品展';
+  const statusKey = currentEvent === 'plane' ? 'プラネ受付'  : '作品展受付';
   const updates   = [];
-  // IndexedDBから最新のメンバーデータを取得（体温などの変更を反映）
-  const all     = await idbGetAll(STORE_PARTICIPANTS);
-  const members = all.filter(p => String(p.家族ID || '').trim() === famId);
+
   for (const member of members) {
+    if (member[targetKey] !== '対象') continue;
     member[statusKey]    = value;
     member.最終更新日時 = now;
     await idbPut(STORE_PARTICIPANTS, member);
-    updates.push({ 個人ID: member.個人ID, value, timestamp: now });
+    updates.push({ 個人ID: member.個人ID, event: currentEvent, value, timestamp: now });
   }
+
   if (updates.length === 0) { showToast('対象者がいません', 'info'); return; }
+
   // カード全体を再描画
   const card = document.querySelector('.family-section[data-fam-id="' + famId + '"]');
   if (card) {
@@ -1174,20 +1165,20 @@ async function checkinAll(famId, value) {
     card.replaceWith(buildFamilyCard(famId, latest.filter(p => String(p.家族ID).trim() === famId)));
   }
   updateLocalStats();
-  // 即座にフィードバック（GAS通信を待たない）
-  if (value === '済' && navigator.vibrate) navigator.vibrate([100, 50, 100]);
-  showToast(
-    value === '済' ? updates.length + '名を一括受付しました' : updates.length + '名の受付を取り消しました',
-    value === '済' ? 'success' : 'info'
-  );
-  // GAS送信はバックグラウンドで実行
+
   if (navigator.onLine && state.gasUrl) {
-    sendUpdates(updates);
+    await sendUpdates(updates);
   } else {
     for (const u of updates) await idbPut(STORE_QUEUE, { ...u, queuedAt: now });
     updateQueueBadge();
   }
+
+  showToast(
+    value === '済' ? updates.length + '名を一括受付しました' : updates.length + '名の受付を取り消しました',
+    value === '済' ? 'success' : 'info'
+  );
 }
+
 // ============================================================
 //  GAS送信 / キュー
 // ============================================================
@@ -1211,6 +1202,7 @@ async function sendUpdates(updates) {
     showToast('オフライン: キューに保存しました', 'info');
   }
 }
+
 async function flushQueue() {
   if (isSyncing || !navigator.onLine || !state.gasUrl) return;
   const queue = await idbGetAll(STORE_QUEUE);
@@ -1227,56 +1219,100 @@ async function flushQueue() {
       }
       updateQueueBadge();
       showToast(queue.length + '件を同期しました', 'success');
-      await refreshDisplay();
+      await fetchAllData();
     }
   } catch (e) { /* 次回リトライ */ }
   finally { isSyncing = false; }
 }
+
 async function updateQueueBadge() {
   const queue = await idbGetAll(STORE_QUEUE);
   const badge = document.getElementById('queue-badge');
   document.getElementById('queue-count').textContent = queue.length;
   badge.classList.toggle('visible', queue.length > 0);
 }
+
+async function showQueueModal() {
+  const queue = await idbGetAll(STORE_QUEUE);
+  const all   = await idbGetAll(STORE_PARTICIPANTS);
+  const list  = document.getElementById('queue-list');
+
+  if (queue.length === 0) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">送信待ちのジョブはありません</div>';
+  } else {
+    list.innerHTML = '';
+    queue.forEach(item => {
+      const person = all.find(p => p.個人ID === item.個人ID);
+      const name   = person ? person.氏名 : item.個人ID;
+      const time   = item.queuedAt ? new Date(item.queuedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '';
+      const el = document.createElement('div');
+      el.className = 'queue-item';
+      el.innerHTML =
+        '<div>' +
+          '<div class="queue-item-name">' + name + '</div>' +
+          '<div class="queue-item-meta">' + item.個人ID + (item.体温 ? ' ／ 体温 ' + item.体温 + '℃' : '') + (time ? ' ／ ' + time : '') + '</div>' +
+        '</div>' +
+        '<span class="queue-item-value ' + (item.value === '済' ? 'done' : 'undone') + '">' + (item.value === '済' ? '受付済' : '取消') + '</span>';
+      list.appendChild(el);
+    });
+  }
+
+  document.getElementById('queue-panel').classList.add('active');
+}
+
 // ============================================================
 //  統計
 // ============================================================
 function updateStats(stats) {
   if (!stats) return;
-  const total = stats.total || 0;
-  const done  = stats.done  || 0;
-  document.getElementById('checkin-count').textContent = done + '/' + total;
-  document.getElementById('checkin-bar').style.width   = (total ? done/total*100 : 0) + '%';
+  const pT = stats.plane.total || 0, pD = stats.plane.done || 0;
+  const aT = stats.art.total   || 0, aD = stats.art.done   || 0;
+  document.getElementById('plane-count').textContent = pD + '/' + pT;
+  document.getElementById('art-count').textContent   = aD + '/' + aT;
+  document.getElementById('plane-bar').style.width   = (pT ? pD/pT*100 : 0) + '%';
+  document.getElementById('art-bar').style.width     = (aT ? aD/aT*100 : 0) + '%';
 }
+
 async function updateLocalStats() {
   const all   = await idbGetAll(STORE_PARTICIPANTS);
-  const stats = { total: all.length, done: all.filter(p => p.受付 === '済').length };
+  const stats = { plane: { total:0, done:0 }, art: { total:0, done:0 } };
+  all.forEach(p => {
+    if (p.プラネ鑑賞 === '対象') { stats.plane.total++; if (p.プラネ受付  === '済') stats.plane.done++; }
+    if (p.作品展     === '対象') { stats.art.total++;   if (p.作品展受付  === '済') stats.art.done++;   }
+  });
   updateStats(stats);
 }
+
 // ============================================================
 //  メンバー追加フォーム
 // ============================================================
 function showAddForm() {
   showAddMemberForm(null, null);
 }
+
 function showAddMemberForm(famId, refMember) {
   // 既存フォームがあれば閉じる
   const existing = document.getElementById('add-form-el');
   if (existing) { existing.remove(); return; }
+
   const isNewFamily = !famId;
   const newPid = 'P-' + Date.now().toString().slice(-5);
   const newFid = isNewFamily ? 'FAM-' + Date.now().toString().slice(-4) : famId;
+
   const form = document.createElement('div');
   form.className = 'add-form';
   form.id = 'add-form-el';
+
   // タイトル：どの家族への追加か明示
   const title = isNewFamily
     ? '➕ 新規家族を追加'
     : '➕ ' + famId + ' にメンバー追加';
+
   // 事業所・電話番号・参加形態は既存メンバーから引き継ぎ（家族追加時のみ）
   const officeVal = refMember ? (refMember.事業所    || '') : '';
   const telVal    = refMember ? (refMember.電話番号  || '') : '';
   const typeVal   = refMember ? (refMember.参加形態  || '家族同伴') : '家族同伴';
+
   form.innerHTML =
     '<h3>' + title + '</h3>' +
     '<input type="hidden" id="new-famid" value="' + newFid + '">' +
@@ -1304,22 +1340,36 @@ function showAddMemberForm(famId, refMember) {
           '<input type="hidden" id="new-tel"    value="' + telVal    + '">' +
           '<input type="hidden" id="new-type"   value="' + typeVal   + '">'
       ) +
+      '<div class="full">' +
+        '<div class="form-label">対象イベント</div>' +
+        '<div class="checkbox-row">' +
+          '<label class="checkbox-label"><input type="checkbox" id="new-plane" checked> 🔭 プラネタリウム</label>' +
+          '<label class="checkbox-label"><input type="checkbox" id="new-art"   checked> 🎨 作品展</label>' +
+        '</div>' +
+      '</div>' +
     '</div>' +
     '<div style="display:flex;gap:8px;">' +
       '<button class="btn btn-primary" id="submit-add" style="flex:1">登録する</button>' +
       '<button class="btn btn-ghost"   id="cancel-add">キャンセル</button>' +
     '</div>';
+
   const container = document.getElementById('main-content');
   container.insertBefore(form, container.firstChild);
   container.scrollTo({ top: 0, behavior: 'smooth' });
+
   document.getElementById('cancel-add').onclick = () => form.remove();
   document.getElementById('submit-add').onclick  = submitAddForm;
 }
+
 async function submitAddForm() {
   const famId = document.getElementById('new-famid').value.trim();
   const pid   = document.getElementById('new-pid').value.trim();
   const name  = document.getElementById('new-name').value.trim();
   if (!famId || !pid || !name) { showToast('氏名は必須です', 'error'); return; }
+
+  const planeTarget = document.getElementById('new-plane').checked ? '対象' : '-';
+  const artTarget   = document.getElementById('new-art').checked   ? '対象' : '-';
+
   const rec = {
     家族ID: famId, 個人ID: pid, 氏名: name,
     年齢:       document.getElementById('new-age').value    || '',
@@ -1327,10 +1377,13 @@ async function submitAddForm() {
     事業所:     document.getElementById('new-office').value.trim(),
     電話番号:   document.getElementById('new-tel').value.trim(),
     参加形態:   document.getElementById('new-type').value,
-    受付: '未',
+    プラネ鑑賞: planeTarget, プラネ受付: planeTarget === '対象' ? '未' : '-',
+    作品展:     artTarget,   作品展受付: artTarget   === '対象' ? '未' : '-',
     体温: '', 最終更新日時: new Date().toISOString()
   };
+
   await idbPut(STORE_PARTICIPANTS, rec);
+
   if (navigator.onLine && state.gasUrl) {
     try {
       const result = await gasPost({ action: 'add', record: rec });
@@ -1342,29 +1395,35 @@ async function submitAddForm() {
   } else {
     showToast('オフライン: ローカルに保存しました', 'info');
   }
+
   document.getElementById('add-form-el')?.remove();
   await buildOfficeFilter();
   updateLocalStats();
 }
+
 // ============================================================
 //  QRカメラ（Androidフォールバック付き）
 // ============================================================
 async function openCameraView() {
   const view = document.getElementById('camera-view');
   view.classList.add('active');
+
   if (!location.protocol.startsWith('https') && location.hostname !== 'localhost') {
     showToast('カメラはHTTPS環境が必要です', 'error');
     closeCameraView();
     return;
   }
+
   // BarcodeDetector API対応チェック
   const hasBarcodeDetector = 'BarcodeDetector' in window;
+
   // カメラ起動
   const constraints = [
     { video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 } } },
     { video: { facingMode: { ideal: 'environment' } } },
     { video: true }
   ];
+
   let started = false;
   let lastErr = '';
   for (const c of constraints) {
@@ -1374,6 +1433,7 @@ async function openCameraView() {
       break;
     } catch (e) { lastErr = e.message; }
   }
+
   if (!started) {
     view.classList.remove('active');
     const isIOS     = /iPhone|iPad/.test(navigator.userAgent);
@@ -1392,12 +1452,15 @@ iOS設定 → Safari → カメラ → 許可`;
     alert('カメラへのアクセスが拒否されています。\n\n' + guide);
     return;
   }
+
   const video = document.getElementById('qr-video');
   video.srcObject = qrStream;
   video.setAttribute('playsinline', 'true');
   video.setAttribute('muted', 'true');
+
   let scanning = true;
   qrInterval = { stop: () => { scanning = false; } };
+
   if (hasBarcodeDetector) {
     // ---- BarcodeDetector API（Android Chrome推奨） ----
     let detector;
@@ -1407,9 +1470,11 @@ iOS設定 → Safari → カメラ → 許可`;
       showToast('BarcodeDetector初期化失敗: ' + e.message, 'error');
       closeCameraView(); return;
     }
+
     let lastResult = '';
     let cooldown   = false;
     let lastScan   = 0;
+
     async function scanFrame(timestamp) {
       if (!scanning) return;
       requestAnimationFrame(scanFrame);
@@ -1417,6 +1482,7 @@ iOS設定 → Safari → カメラ → 許可`;
       lastScan = timestamp;
       if (video.readyState < 2 || video.videoWidth === 0) return;
       if (cooldown) return;
+
       try {
         const codes = await detector.detect(video);
         if (codes.length > 0) {
@@ -1430,9 +1496,11 @@ iOS設定 → Safari → カメラ → 許可`;
         }
       } catch(e) { /* フレームスキップ */ }
     }
+
     video.addEventListener('loadeddata', () => requestAnimationFrame(scanFrame), { once: true });
     video.play().catch(() => {});
     showToast('📷 QRコードをカメラに向けてください', 'info');
+
   } else {
     // ---- jsQRフォールバック（BarcodeDetector非対応環境用） ----
     // オフライン時はjsQRが使えないため案内して終了
@@ -1450,11 +1518,13 @@ iOS設定 → Safari → カメラ → 許可`;
       showToast('QR読取ライブラリのロードに失敗しました。ページを再読み込みしてください。', 'error');
       closeCameraView(); return;
     }
+
     const canvas = document.createElement('canvas');
     const ctx    = canvas.getContext('2d', { willReadFrequently: true });
     let lastResult = '';
     let cooldown   = false;
     let lastScan   = 0;
+
     function scanFrame(timestamp) {
       if (!scanning) return;
       requestAnimationFrame(scanFrame);
@@ -1462,12 +1532,14 @@ iOS設定 → Safari → カメラ → 許可`;
       lastScan = timestamp;
       if (video.readyState < 2 || video.videoWidth === 0) return;
       if (cooldown) return;
+
       const scale   = Math.min(1, 640 / Math.max(video.videoWidth, video.videoHeight));
       canvas.width  = Math.floor(video.videoWidth  * scale);
       canvas.height = Math.floor(video.videoHeight * scale);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
+
       if (code && code.data && code.data !== lastResult) {
         lastResult = code.data;
         cooldown   = true;
@@ -1475,11 +1547,13 @@ iOS設定 → Safari → カメラ → 許可`;
         handleFamilyId(code.data.trim());
       }
     }
+
     video.addEventListener('loadeddata', () => requestAnimationFrame(scanFrame), { once: true });
     video.play().catch(() => {});
     showToast('📷 QRコードをカメラに向けてください (jsQR)', 'info');
   }
 }
+
 function closeCameraView() {
   if (qrInterval) {
     if (typeof qrInterval.stop === 'function') qrInterval.stop();
@@ -1489,6 +1563,7 @@ function closeCameraView() {
   if (qrStream) { qrStream.getTracks().forEach(t => t.stop()); qrStream = null; }
   document.getElementById('camera-view').classList.remove('active');
 }
+
 // ============================================================
 //  データ全消去
 // ============================================================
@@ -1496,26 +1571,11 @@ async function clearAllData() {
   await idbClear(STORE_PARTICIPANTS);
   await idbClear(STORE_QUEUE);
   renderFamilies({}, false);
-  updateStats({ total:0, done:0 });
+  updateStats({ plane:{total:0,done:0}, art:{total:0,done:0} });
   updateQueueBadge();
   showToast('全データを消去しました', 'info');
 }
-// ============================================================
-//  ユーティリティ
-// ============================================================
-function formatTime(isoString) {
-  try {
-    const d = new Date(isoString);
-    if (isNaN(d.getTime())) return '';
-    return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
-  } catch (e) { return ''; }
-}
-function updateLastSyncDisplay(isoString) {
-  const el = document.getElementById('last-sync');
-  if (!el) return;
-  if (!isoString) { el.textContent = ''; return; }
-  el.textContent = '最終同期: ' + formatTime(isoString);
-}
+
 // ============================================================
 //  トースト
 // ============================================================
@@ -1527,6 +1587,7 @@ function showToast(msg, type = 'info') {
   area.appendChild(toast);
   setTimeout(() => toast.remove(), 3000);
 }
+
 // ============================================================
 //  確認モーダル
 // ============================================================
@@ -1542,6 +1603,7 @@ function showConfirm(title, message, onOk) {
     document.getElementById('confirm-modal').classList.remove('active');
   };
 }
+
 // ============================================================
 //  オンライン状態
 // ============================================================
@@ -1552,10 +1614,21 @@ function updateOnlineStatus() {
   document.getElementById('status-text').textContent = online ? 'オンライン' : 'オフライン';
   if (online) flushQueue();
 }
+
 // ============================================================
 //  イベントリスナー
 // ============================================================
 function bindEvents() {
+  // タブ切替
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentEvent = btn.dataset.event;
+      search(); // タブ切替時も再描画
+    });
+  });
+
   // 氏名入力：Enterキーまたは入力が止まったら検索
   let searchTimer = null;
   document.getElementById('search-name').addEventListener('input', () => {
@@ -1565,32 +1638,23 @@ function bindEvents() {
   document.getElementById('search-name').addEventListener('keydown', e => {
     if (e.key === 'Enter') { clearTimeout(searchTimer); search(); }
   });
-  // [修正2] 事業所プルダウン変更時に検索（clickイベントの重複を削除）
+
+  // 事業所プルダウン変更時に即検索
   document.getElementById('filter-office').addEventListener('change', () => { search(); });
-  // 利用児童フィルタ
-  document.getElementById('filter-child-only').addEventListener('change', () => { search(); });
-  // 未受付のみフィルタ
-  document.getElementById('filter-undone-only').addEventListener('change', () => { search(); });
-  // 体温未入力フィルタ
-  document.getElementById('filter-no-temp').addEventListener('change', () => { search(); });
-  // 検索クリアボタン
-  const searchInput = document.getElementById('search-name');
-  const clearBtn    = document.getElementById('search-clear');
-  function updateClearBtn() {
-    clearBtn.classList.toggle('visible', searchInput.value.length > 0);
-  }
-  searchInput.addEventListener('input', updateClearBtn);
-  clearBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    updateClearBtn();
-    search();
-    searchInput.focus();
+
+  // 「全事業所」が選択済みのまま再タップされても検索リフレッシュ
+  document.getElementById('filter-office').addEventListener('click', () => {
+    const sel = document.getElementById('filter-office');
+    if (sel.value === '') search();
   });
+
   // QRカメラ
   document.getElementById('open-camera').addEventListener('click', openCameraView);
   document.getElementById('close-camera').addEventListener('click', closeCameraView);
+
   // 新規追加
   document.getElementById('add-btn').addEventListener('click', showAddForm);
+
   // 設定パネル
   document.getElementById('open-settings').addEventListener('click', () => {
     document.getElementById('settings-panel').classList.add('active');
@@ -1614,63 +1678,43 @@ function bindEvents() {
       clearAllData
     );
   });
+
+  // キューバッジ → キューパネル表示
+  document.getElementById('queue-badge').addEventListener('click', showQueueModal);
+  document.getElementById('close-queue').addEventListener('click', () => {
+    document.getElementById('queue-panel').classList.remove('active');
+  });
+  document.getElementById('queue-panel').addEventListener('click', e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
+  });
+
   // モーダル
   document.getElementById('modal-cancel').addEventListener('click', () => {
     document.getElementById('confirm-modal').classList.remove('active');
   });
+
   // オンライン/オフライン
   window.addEventListener('online',  updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
+
   // 設定パネル背景タップで閉じる
   document.getElementById('settings-panel').addEventListener('click', e => {
     if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
   });
 }
-// ============================================================
-//  テーマ切り替え
-// ============================================================
-function setTheme(theme) {
-  if (theme === 'light') {
-    document.body.classList.add('theme-light');
-  } else {
-    document.body.classList.remove('theme-light');
-  }
-  // ボタンのactive状態を更新
-  document.getElementById('theme-dark') .classList.toggle('btn-primary', theme === 'dark');
-  document.getElementById('theme-light').classList.toggle('btn-primary', theme === 'light');
-  document.getElementById('theme-dark') .classList.toggle('btn-ghost',   theme !== 'dark');
-  document.getElementById('theme-light').classList.toggle('btn-ghost',   theme !== 'light');
-  // IndexedDBに保存
-  setMeta('theme', theme);
-}
+
 // ============================================================
 //  初期化
 // ============================================================
-// ============================================================
-//  自動ポーリング（30秒ごと・操作中スキップ）
-// ============================================================
-function startPolling() {
-  if (pollTimer) return;
-  pollTimer = setInterval(async () => {
-    if (!navigator.onLine || !state.gasUrl || !state.apiKey) return;
-    if (isUserActive) return;
-    await fetchAllData(true);
-  }, 30000);
-}
 async function init() {
   db = await openDB();
   await loadSettings();
-  // テーマ復元
-  const savedTheme = await getMeta('theme') || 'dark';
-  setTheme(savedTheme);
   await buildOfficeFilter();
   await updateLocalStats();
   await updateQueueBadge();
   updateOnlineStatus();
-  // 最終同期時刻を復元表示
-  const lastSync = await getMeta('lastSync');
-  if (lastSync) updateLastSyncDisplay(lastSync);
   bindEvents();
+
   const all = await idbGetAll(STORE_PARTICIPANTS);
   if (all.length === 0 && state.gasUrl && state.apiKey) {
     await fetchAllData();
@@ -1681,9 +1725,12 @@ async function init() {
     // 起動時にすでにデータがあれば全員表示
     await search();
   }
-  startPolling();
 }
+
 init().catch(e => {
   console.error('Init failed:', e);
   showToast('起動エラー: ' + e.message, 'error');
 });
+</script>
+</body>
+</html>
