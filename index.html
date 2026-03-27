@@ -1265,21 +1265,15 @@ async function showQueueModal() {
 // ============================================================
 function updateStats(stats) {
   if (!stats) return;
-  const pT = stats.plane.total || 0, pD = stats.plane.done || 0;
-  const aT = stats.art.total   || 0, aD = stats.art.done   || 0;
-  document.getElementById('plane-count').textContent = pD + '/' + pT;
-  document.getElementById('art-count').textContent   = aD + '/' + aT;
-  document.getElementById('plane-bar').style.width   = (pT ? pD/pT*100 : 0) + '%';
-  document.getElementById('art-bar').style.width     = (aT ? aD/aT*100 : 0) + '%';
+  const total = stats.total || 0;
+  const done  = stats.done  || 0;
+  document.getElementById('checkin-count').textContent = done + '/' + total;
+  document.getElementById('checkin-bar').style.width   = (total ? done/total*100 : 0) + '%';
 }
 
 async function updateLocalStats() {
   const all   = await idbGetAll(STORE_PARTICIPANTS);
-  const stats = { plane: { total:0, done:0 }, art: { total:0, done:0 } };
-  all.forEach(p => {
-    if (p.プラネ鑑賞 === '対象') { stats.plane.total++; if (p.プラネ受付  === '済') stats.plane.done++; }
-    if (p.作品展     === '対象') { stats.art.total++;   if (p.作品展受付  === '済') stats.art.done++;   }
-  });
+  const stats = { total: all.length, done: all.filter(p => p.受付 === '済').length };
   updateStats(stats);
 }
 
