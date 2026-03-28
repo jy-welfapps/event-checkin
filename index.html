@@ -19,17 +19,9 @@
 }">
 
 <style>
-/* ============================================================
-   DESIGN: 深夜の宇宙 × 実務クリーン
-   - 深い藍色ベース、星空テクスチャ
-   - アクセントは惑星のような琥珀〜ゴールド
-   - 児童福祉らしい温かみをゴールドで表現
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Orbitron:wght@600&display=swap');
 
 :root {
-  /* ダークテーマ（デフォルト：深夜の宇宙） */
   --bg-deep:     #0d1117;
   --bg-mid:      #1a1f35;
   --bg-card:     #1e2540;
@@ -39,6 +31,7 @@
   --teal:        #3dd6c8;
   --red:         #ff5f6d;
   --green:       #2dbb6a;
+  --purple:      #a78bfa;
   --text-main:   #e8eaf6;
   --text-sub:    #8892b0;
   --text-muted:  #4a5270;
@@ -50,7 +43,6 @@
   --header-border: #2a3255;
 }
 
-/* ライトテーマ */
 body.theme-light {
   --bg-deep:     #f0f4f8;
   --bg-mid:      #ffffff;
@@ -61,6 +53,7 @@ body.theme-light {
   --teal:        #0e9de2;
   --red:         #e53e3e;
   --green:       #1a9e4a;
+  --purple:      #7c3aed;
   --text-main:   #1a202c;
   --text-sub:    #4a5568;
   --text-muted:  #a0aec0;
@@ -80,7 +73,6 @@ html, body {
   overflow: hidden;
 }
 
-/* 星空背景（ダークテーマのみ） */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: 0;
@@ -109,7 +101,6 @@ body.theme-light::before { opacity: 0; }
 }
 body.theme-light #stars { opacity: 0; }
 
-/* ライトテーマ時のヘッダー文字色（白に固定） */
 body.theme-light .logo,
 body.theme-light .status-badge.online,
 body.theme-light .status-badge.offline,
@@ -127,7 +118,6 @@ body.theme-light .progress-label,
 body.theme-light .progress-num { color: rgba(255,255,255,0.9); }
 body.theme-light .progress-bar-wrap { background: rgba(255,255,255,0.2); }
 
-/* ---- レイアウト ---- */
 #app {
   position: relative; z-index: 1;
   display: flex; flex-direction: column;
@@ -135,7 +125,6 @@ body.theme-light .progress-bar-wrap { background: rgba(255,255,255,0.2); }
   max-width: 768px; margin: 0 auto;
 }
 
-/* ---- ヘッダー ---- */
 header {
   background: var(--header-bg);
   border-bottom: 1px solid var(--header-border);
@@ -163,7 +152,6 @@ header {
   display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }
 
-/* 接続ステータス */
 .status-badge {
   display: flex; align-items: center; gap: 5px;
   font-size: 11px; padding: 4px 9px;
@@ -176,7 +164,6 @@ header {
 .status-badge.online .status-dot { animation: pulse-dot 2s infinite; }
 @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* キューバッジ */
 .queue-badge {
   display: none; align-items: center; gap: 4px;
   background: rgba(240,165,0,0.15); color: var(--accent);
@@ -186,7 +173,6 @@ header {
 }
 .queue-badge.visible { display: flex; }
 
-/* 進捗カウンター（1本のみ） */
 .progress-row {
   display: flex; gap: 8px; margin-top: 10px;
 }
@@ -200,7 +186,6 @@ header {
 .progress-bar { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--teal), var(--accent)); transition: width 0.6s ease; }
 .progress-num { font-size: 11px; font-weight: 700; color: var(--text-main); white-space: nowrap; }
 
-/* ---- 検索エリア ---- */
 .search-area {
   background: var(--bg-mid); border-bottom: 1px solid var(--border);
   padding: 12px 14px; flex-shrink: 0;
@@ -230,10 +215,9 @@ header {
   color: var(--text-sub); pointer-events: none; font-size: 11px;
 }
 
-/* フィルタチェックボックスエリア */
 .filter-checks {
   display: flex; gap: 14px; align-items: center;
-  padding: 2px 0;
+  padding: 2px 0; flex-wrap: wrap;
 }
 .checkbox-label {
   display: flex; align-items: center; gap: 5px;
@@ -241,6 +225,8 @@ header {
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
 }
 .checkbox-label input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+.checkbox-label.absent-label { color: var(--purple); }
+.checkbox-label.absent-label input[type=checkbox] { accent-color: var(--purple); }
 
 .btn {
   padding: 10px 16px; border: none; border-radius: var(--radius-sm);
@@ -261,7 +247,6 @@ body.theme-light .btn-teal { background: var(--teal); color: #fff; border-color:
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-xs { padding: 4px 9px; font-size: 11px; }
 
-/* QRスキャンボタン */
 .btn-qr {
   background: linear-gradient(135deg, #1e2540, #252d4a);
   color: var(--teal); border: 1px solid rgba(61,214,200,0.4);
@@ -269,13 +254,11 @@ body.theme-light .btn-teal { background: var(--teal); color: #fff; border-color:
 }
 body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: var(--teal); }
 
-/* ---- メインコンテンツ ---- */
 .main-content {
   flex: 1; overflow-y: auto; padding: 12px 14px;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ---- カメラビュー ---- */
 #camera-view {
   display: none; flex-direction: column; gap: 12px;
   position: fixed; inset: 0; z-index: 100;
@@ -317,7 +300,6 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 
 .qr-hint { color: var(--text-sub); font-size: 13px; text-align: center; }
 
-/* ---- ファミリーカード ---- */
 .family-section {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
@@ -355,6 +337,11 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 .person-row:last-child { border-bottom: none; }
 .person-row:hover { background: rgba(255,255,255,0.02); }
 
+/* 欠席行 */
+.person-row.absent-row { opacity: 0.55; background: rgba(139,92,246,0.04); }
+.person-row.absent-row .person-name { text-decoration: line-through; color: var(--text-muted); }
+.person-row.absent-row:hover { background: rgba(139,92,246,0.06); }
+
 .person-avatar {
   width: 34px; height: 34px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
@@ -384,6 +371,20 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 .checkin-btn.done {
   background: rgba(74,222,128,0.1); color: var(--green); border-color: rgba(74,222,128,0.3);
 }
+.checkin-btn.absent {
+  background: rgba(139,92,246,0.12); color: #a78bfa; border-color: rgba(139,92,246,0.35);
+}
+.checkin-btn.absent:hover { background: rgba(139,92,246,0.22); }
+
+/* 欠席にするボタン */
+.absent-btn {
+  padding: 5px 8px; border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  border: 1px solid rgba(139,92,246,0.3);
+  background: rgba(139,92,246,0.06); color: #a78bfa;
+  font-family: 'Noto Sans JP', sans-serif; transition: all 0.15s;
+}
+.absent-btn:hover { background: rgba(139,92,246,0.16); }
 
 /* 体温入力 */
 .temp-input {
@@ -467,15 +468,14 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 .queue-item-value { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
 .queue-item-value.done   { background: rgba(74,222,128,0.15); color: var(--green); }
 .queue-item-value.undone { background: rgba(255,95,109,0.15); color: var(--red); }
+.queue-item-value.absent { background: rgba(139,92,246,0.15); color: #a78bfa; }
 
-/* ---- ローディング ---- */
 .spinner {
   display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border);
   border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ---- トースト通知 ---- */
 #toast-area {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   z-index: 300; display: flex; flex-direction: column; gap: 8px; align-items: center;
@@ -492,14 +492,12 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 @keyframes toastIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
 
-/* ---- 空状態 ---- */
 .empty-state {
   text-align: center; padding: 48px 20px; color: var(--text-muted);
 }
 .empty-icon { font-size: 42px; margin-bottom: 12px; opacity: 0.4; }
 .empty-text { font-size: 14px; }
 
-/* ---- モーダル（確認） ---- */
 .modal-overlay {
   display: none; position: fixed; inset: 0; z-index: 400;
   background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
@@ -515,7 +513,6 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 .modal-actions { display: flex; gap: 8px; }
 .modal-actions .btn { flex: 1; }
 
-/* ---- スクロールバー ---- */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -614,7 +611,6 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
         <button class="btn btn-ghost btn-sm" id="open-settings">⚙️</button>
       </div>
     </div>
-    <!-- 進捗バー：1本のみ -->
     <div class="progress-row">
       <div class="progress-item">
         <span class="progress-label">✅ 受付</span>
@@ -625,8 +621,6 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
       </div>
     </div>
   </header>
-
-  <!-- タブなし：1イベントに集約 -->
 
   <div class="search-area">
     <div class="search-row">
@@ -646,7 +640,6 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
         <span class="select-arrow">▼</span>
       </div>
     </div>
-    <!-- フィルタ：2つ並べてチェックボックス -->
     <div class="filter-checks">
       <label class="checkbox-label">
         <input type="checkbox" id="filter-undone">
@@ -655,6 +648,10 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
       <label class="checkbox-label">
         <input type="checkbox" id="filter-child-only">
         利用児童のみ
+      </label>
+      <label class="checkbox-label absent-label">
+        <input type="checkbox" id="filter-absent">
+        欠席を表示
       </label>
     </div>
   </div>
@@ -669,12 +666,11 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 
 <div id="toast-area"></div>
 
-<!-- jsQR: BarcodeDetector非対応環境（PC等）のフォールバック用 -->
+<!-- jsQR: BarcodeDetector非対応環境のフォールバック -->
 <script>
 (function() {
   if ('BarcodeDetector' in window) return;
   if (!navigator.onLine) return;
-
   const cdns = [
     'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js',
     'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js',
@@ -694,9 +690,14 @@ body.theme-light .btn-qr { background: var(--teal); color: #fff; border-color: v
 
 <script>
 // ============================================================
-//  イベント受付システム v1（いいとこ取り統合版）
-//  ベース: indexv0（1イベント・テーマ・ポーリング）
-//  追加:   index（キューパネル・自動受付・60秒クリア・バックグラウンド差分）
+//  イベント受付システム v2
+//  v1からの変更点:
+//   - fetchAllData: idbClear廃止→マージ方式（複数端末の競合解消）
+//   - showAddMemberForm: isUserActiveフラグ追加（入力中リフレッシュ防止）
+//   - refreshDisplay: 追加フォーム表示中はスキップ
+//   - 欠席ステータス追加（個人単位、フィルター対応）
+//   - checkinAll: 欠席者をスキップ
+//   - updateLocalStats: 欠席者を集計から除外
 // ============================================================
 
 const DB_NAME            = 'EventCheckin';
@@ -709,10 +710,10 @@ let db              = null;
 let isSyncing       = false;
 let qrStream        = null;
 let qrInterval      = null;
-let pollTimer       = null;     // 自動ポーリング用
-let isUserActive    = false;    // 体温入力などの操作中フラグ
-let currentFamilyId = null;     // QRスキャンで絞り込み中の家族ID
-let dismissTimer    = null;     // QRスキャン後の自動クリアタイマー
+let pollTimer       = null;
+let isUserActive    = false;
+let currentFamilyId = null;
+let dismissTimer    = null;
 
 const state = { gasUrl: '', apiKey: '' };
 
@@ -817,7 +818,7 @@ async function gasPost(body) {
   const res = await fetch(state.gasUrl, {
     method:  'POST',
     redirect: 'follow',
-    headers: { 'Content-Type': 'text/plain' }, // GASはapplication/jsonでCORSエラーになる
+    headers: { 'Content-Type': 'text/plain' },
     body:    JSON.stringify({ ...body, apiKey: state.apiKey })
   });
   if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -826,6 +827,10 @@ async function gasPost(body) {
 
 // ============================================================
 //  データ取得・同期
+//  【v2修正】idbClear廃止 → マージ方式
+//   - キュー内（未送信）の個人IDは絶対に上書きしない
+//   - それ以外はGASのタイムスタンプが新しい場合のみ更新
+//   → 複数端末で同時操作しても互いの変更が消えない
 // ============================================================
 async function fetchAllData(silent = false) {
   if (!state.gasUrl || !state.apiKey) {
@@ -839,13 +844,28 @@ async function fetchAllData(silent = false) {
   try {
     const data = await gasGet();
     if (data.error) throw new Error(data.error);
-    await idbClear(STORE_PARTICIPANTS);
-    for (const p of data.participants) await idbPut(STORE_PARTICIPANTS, p);
+
+    // キュー内の個人IDを収集（これらのレコードは上書き禁止）
+    const queue     = await idbGetAll(STORE_QUEUE);
+    const queuedIds = new Set(queue.map(q => q.個人ID));
+
+    // ローカルのマップを作成
+    const local    = await idbGetAll(STORE_PARTICIPANTS);
+    const localMap = Object.fromEntries(local.map(p => [p.個人ID, p]));
+
+    // GASデータをマージ（ローカルの方が新しければスキップ）
+    for (const p of data.participants) {
+      if (queuedIds.has(p.個人ID)) continue; // 未送信データは保護
+      const existing = localMap[p.個人ID];
+      if (!existing || (p.最終更新日時 || '') >= (existing.最終更新日時 || '')) {
+        await idbPut(STORE_PARTICIPANTS, p);
+      }
+    }
+
     await setMeta('lastSync', new Date().toISOString());
     updateStats(data.stats);
     await buildOfficeFilter();
     if (!silent) showToast(data.participants.length + '件取得しました', 'success');
-    // 操作中でなければUIも更新
     if (!isUserActive) await refreshDisplay();
   } catch (e) {
     if (!silent) showToast('取得失敗: ' + e.message, 'error');
@@ -870,9 +890,13 @@ async function buildOfficeFilter() {
 }
 
 // ============================================================
-//  表示リフレッシュ（QR絞り込み中は維持、そうでなければ全件検索）
+//  表示リフレッシュ
+//  【v2修正】追加フォーム入力中は更新しない
 // ============================================================
 async function refreshDisplay() {
+  // 追加フォームが開いている間はリフレッシュしない（入力内容が消えるのを防ぐ）
+  if (document.getElementById('add-form-el')) return;
+
   if (currentFamilyId) {
     const all   = await idbGetAll(STORE_PARTICIPANTS);
     const group = all.filter(p => String(p.家族ID || '').trim() === currentFamilyId);
@@ -885,27 +909,29 @@ async function refreshDisplay() {
 }
 
 // ============================================================
-//  検索（核心ロジック）
-//  フィルタ: 氏名 / 事業所 / 未受付のみ / 利用児童のみ
+//  検索
+//  【v2修正】欠席フィルター追加（デフォルトで欠席は非表示）
 // ============================================================
 async function search() {
-  // 手動検索時はQR絞り込みと自動クリアタイマーを解除
   if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null; }
   currentFamilyId = null;
 
-  const name      = document.getElementById('search-name').value.trim();
-  const office    = document.getElementById('filter-office').value.trim();
+  const name       = document.getElementById('search-name').value.trim();
+  const office     = document.getElementById('filter-office').value.trim();
   const undoneOnly = document.getElementById('filter-undone').checked;
   const childOnly  = document.getElementById('filter-child-only').checked;
+  const showAbsent = document.getElementById('filter-absent').checked;
 
   let all = await idbGetAll(STORE_PARTICIPANTS);
 
+  // 欠席はデフォルト非表示（チェック時のみ含む）
+  if (!showAbsent) all = all.filter(p => p.受付 !== '欠席');
+
   if (office)     all = all.filter(p => (p.事業所 || '').trim() === office);
   if (name)       all = all.filter(p => (p.氏名   || '').includes(name));
-  if (undoneOnly) all = all.filter(p => (p.受付   || '') !== '済');
+  if (undoneOnly) all = all.filter(p => p.受付 === '未'); // 欠席は「未受付」に含めない
   if (childOnly)  all = all.filter(p => (p.区分   || '') === '利用児童');
 
-  // 家族IDでグループ化
   const families = {};
   all.forEach(p => {
     const fid = String(p.家族ID || '不明').trim();
@@ -913,7 +939,7 @@ async function search() {
     families[fid].push(p);
   });
 
-  const hasFilter = !!(name || office || undoneOnly || childOnly);
+  const hasFilter = !!(name || office || undoneOnly || childOnly || showAbsent);
   renderFamilies(families, hasFilter);
 }
 
@@ -923,10 +949,8 @@ async function search() {
 async function handleFamilyId(familyId) {
   closeCameraView();
 
-  // 既存タイマーをリセット
   if (dismissTimer) { clearTimeout(dismissTimer); dismissTimer = null; }
 
-  // ① ローカルデータで即座に検索
   const all   = await idbGetAll(STORE_PARTICIPANTS);
   const group = all.filter(p => String(p.家族ID || '').trim() === familyId.trim());
 
@@ -935,9 +959,9 @@ async function handleFamilyId(familyId) {
     return;
   }
 
-  // ② 最終更新日時が空の人だけ自動受付（初回のみ）
+  // 最終更新日時が空かつ欠席でない人だけ自動受付
   const now         = new Date().toISOString();
-  const autoCheckin = group.filter(m => !m.最終更新日時);
+  const autoCheckin = group.filter(m => !m.最終更新日時 && m.受付 !== '欠席');
   if (autoCheckin.length > 0) {
     for (const member of autoCheckin) {
       member.受付         = '済';
@@ -956,7 +980,6 @@ async function handleFamilyId(familyId) {
     }
   }
 
-  // ③ 最新データで表示
   currentFamilyId = familyId.trim();
   const latest    = await idbGetAll(STORE_PARTICIPANTS);
   const newGroup  = latest.filter(p => String(p.家族ID || '').trim() === familyId.trim());
@@ -971,19 +994,20 @@ async function handleFamilyId(familyId) {
   showToast(newGroup[0].氏名 + 'さん一家 ' + newGroup.length + '名を表示 ' + autoMsg,
     autoCheckin.length > 0 ? 'success' : 'info');
 
-  // ④ 60秒後に自動クリア（全件表示に戻る）
   dismissTimer = setTimeout(async () => {
     currentFamilyId = null;
     dismissTimer    = null;
     await search();
   }, 60000);
 
-  // ⑤ バックグラウンドでGASから最新データを取得して差分更新
   if (navigator.onLine && state.gasUrl) {
     gasGet({ familyId }).then(async data => {
       if (!data.error && data.participants) {
         let updated = false;
+        const queue     = await idbGetAll(STORE_QUEUE);
+        const queuedIds = new Set(queue.map(q => q.個人ID));
         for (const p of data.participants) {
+          if (queuedIds.has(p.個人ID)) continue;
           const local = latest.find(x => x.個人ID === p.個人ID);
           if (!local || p.最終更新日時 > (local.最終更新日時 || '')) {
             await idbPut(STORE_PARTICIPANTS, p);
@@ -1047,7 +1071,6 @@ function buildFamilyCard(famId, members) {
   badge.textContent = famId;
   header.appendChild(badge);
 
-  // 電話番号（タップで発信）
   const tel = (members.find(m => m.電話番号) || {}).電話番号 || '';
   if (tel) {
     const telEl = document.createElement('a');
@@ -1091,11 +1114,17 @@ function buildFamilyCard(famId, members) {
 
 // ============================================================
 //  個人行
+//  【v2修正】欠席ステータス対応
+//   - 欠席の人は打消し線スタイル＋「欠席解除」ボタンのみ表示
+//   - 通常の人には「欠席」ボタンを追加
 // ============================================================
 function buildPersonRow(person) {
   const row = document.createElement('div');
   row.className = 'person-row';
   row.dataset.pid = person.個人ID;
+
+  const isAbsent = person.受付 === '欠席';
+  if (isAbsent) row.classList.add('absent-row');
 
   const avatar = document.createElement('div');
   avatar.className = 'person-avatar';
@@ -1121,61 +1150,76 @@ function buildPersonRow(person) {
   const actions = document.createElement('div');
   actions.className = 'person-actions';
 
-  // 体温ドロップダウン（35.0〜38.9を0.1刻み）
-  const tempInput = document.createElement('select');
-  tempInput.className = 'temp-input';
-  const blankOpt = document.createElement('option');
-  blankOpt.value = ''; blankOpt.textContent = '体温';
-  tempInput.appendChild(blankOpt);
-  for (let t = 350; t <= 389; t++) {
-    const v = (t / 10).toFixed(1);
-    const opt = document.createElement('option');
-    opt.value = v; opt.textContent = v;
-    if (String(person.体温) === v) opt.selected = true;
-    tempInput.appendChild(opt);
-  }
-
-  const isDone = person.受付 === '済';
-
-  // 受付済み・利用児童・体温未入力 → 赤ハイライト
-  if (isDone && person.区分 === '利用児童' && !person.体温) {
-    tempInput.classList.add('temp-required');
-  }
-
-  // 体温変更時の自動送信（受付済みの場合のみ、1秒デバウンス）
-  let tempTimer = null;
-  tempInput.addEventListener('focus', () => { isUserActive = true; });
-  tempInput.addEventListener('change', () => {
-    isUserActive = true;
-    if (!isDone) return;
-    if (tempInput.value === '') return;
-    tempInput.classList.remove('temp-required');
-    clearTimeout(tempTimer);
-    tempInput.style.borderColor = 'var(--accent)';
-    tempTimer = setTimeout(async () => {
-      await saveTempOnly(person.個人ID, person.家族ID, tempInput.value);
-      tempInput.style.borderColor = 'var(--green)';
-      setTimeout(() => { tempInput.style.borderColor = ''; isUserActive = false; }, 1500);
-    }, 1000);
-  });
-  tempInput.addEventListener('blur', () => {
-    setTimeout(() => { isUserActive = false; }, 1500);
-  });
-
-  const checkinBtn = document.createElement('button');
-  checkinBtn.className = 'checkin-btn';
-  if (isDone) {
-    checkinBtn.classList.add('done');
-    checkinBtn.textContent = '✓ 受付済';
-    checkinBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '未', tempInput.value || '');
+  if (isAbsent) {
+    // 欠席行: 欠席解除ボタンのみ
+    const unabsentBtn = document.createElement('button');
+    unabsentBtn.className = 'checkin-btn absent';
+    unabsentBtn.textContent = '✕ 欠席';
+    unabsentBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '未', '');
+    actions.appendChild(unabsentBtn);
   } else {
-    checkinBtn.classList.add('undone');
-    checkinBtn.textContent = '未';
-    checkinBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '済', tempInput.value || '');
+    const isDone = person.受付 === '済';
+
+    // 体温ドロップダウン
+    const tempInput = document.createElement('select');
+    tempInput.className = 'temp-input';
+    const blankOpt = document.createElement('option');
+    blankOpt.value = ''; blankOpt.textContent = '体温';
+    tempInput.appendChild(blankOpt);
+    for (let t = 350; t <= 389; t++) {
+      const v = (t / 10).toFixed(1);
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      if (String(person.体温) === v) opt.selected = true;
+      tempInput.appendChild(opt);
+    }
+
+    if (isDone && person.区分 === '利用児童' && !person.体温) {
+      tempInput.classList.add('temp-required');
+    }
+
+    let tempTimer = null;
+    tempInput.addEventListener('focus', () => { isUserActive = true; });
+    tempInput.addEventListener('change', () => {
+      isUserActive = true;
+      if (!isDone) return;
+      if (tempInput.value === '') return;
+      tempInput.classList.remove('temp-required');
+      clearTimeout(tempTimer);
+      tempInput.style.borderColor = 'var(--accent)';
+      tempTimer = setTimeout(async () => {
+        await saveTempOnly(person.個人ID, person.家族ID, tempInput.value);
+        tempInput.style.borderColor = 'var(--green)';
+        setTimeout(() => { tempInput.style.borderColor = ''; isUserActive = false; }, 1500);
+      }, 1000);
+    });
+    tempInput.addEventListener('blur', () => {
+      setTimeout(() => { isUserActive = false; }, 1500);
+    });
+
+    const checkinBtn = document.createElement('button');
+    checkinBtn.className = 'checkin-btn';
+    if (isDone) {
+      checkinBtn.classList.add('done');
+      checkinBtn.textContent = '✓ 受付済';
+      checkinBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '未', tempInput.value || '');
+    } else {
+      checkinBtn.classList.add('undone');
+      checkinBtn.textContent = '未';
+      checkinBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '済', tempInput.value || '');
+    }
+
+    // 欠席ボタン
+    const absentBtn = document.createElement('button');
+    absentBtn.className = 'absent-btn';
+    absentBtn.textContent = '欠席';
+    absentBtn.onclick = () => checkinPerson(person.個人ID, person.家族ID, '欠席', '');
+
+    actions.appendChild(tempInput);
+    actions.appendChild(checkinBtn);
+    actions.appendChild(absentBtn);
   }
 
-  actions.appendChild(tempInput);
-  actions.appendChild(checkinBtn);
   row.appendChild(avatar);
   row.appendChild(info);
   row.appendChild(actions);
@@ -1183,7 +1227,7 @@ function buildPersonRow(person) {
 }
 
 // ============================================================
-//  体温のみ保存（受付済み後に体温を入力したケース）
+//  体温のみ保存
 // ============================================================
 async function saveTempOnly(個人ID, 家族ID, 体温) {
   const now    = new Date().toISOString();
@@ -1206,6 +1250,7 @@ async function saveTempOnly(個人ID, 家族ID, 体温) {
 
 // ============================================================
 //  チェックイン（個人）
+//  【v2修正】欠席時は体温をクリア
 // ============================================================
 async function checkinPerson(個人ID, 家族ID, value, 体温) {
   const now    = new Date().toISOString();
@@ -1218,13 +1263,12 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
   person.最終更新日時 = now;
   await idbPut(STORE_PARTICIPANTS, person);
 
-  // 行を差分更新
   const oldRow = document.querySelector('.person-row[data-pid="' + 個人ID + '"]');
   if (oldRow) oldRow.replaceWith(buildPersonRow(person));
   updateLocalStats();
 
-  // 受付取消時はシートの体温を空にする（ローカルは保持）
-  const sendTemp = value === '未' ? '' : (体温 || '');
+  // 受付取消・欠席時はシートの体温をクリア
+  const sendTemp = (value === '未' || value === '欠席') ? '' : (体温 || '');
   const update   = { 個人ID, value, 体温: sendTemp, timestamp: now };
   if (navigator.onLine && state.gasUrl) {
     await sendUpdates([update]);
@@ -1233,20 +1277,22 @@ async function checkinPerson(個人ID, 家族ID, value, 体温) {
     updateQueueBadge();
   }
 
-  showToast(
-    value === '済' ? person.氏名 + 'を受付しました' : person.氏名 + 'の受付を取り消しました',
-    value === '済' ? 'success' : 'info'
-  );
+  const msg = value === '済'    ? person.氏名 + 'を受付しました'
+            : value === '欠席'  ? person.氏名 + 'を欠席にしました'
+            :                     person.氏名 + 'の受付を取り消しました';
+  showToast(msg, value === '済' ? 'success' : 'info');
 }
 
 // ============================================================
 //  チェックイン（一括）
+//  【v2修正】欠席者はスキップ
 // ============================================================
 async function checkinAll(famId, members, value) {
   const now     = new Date().toISOString();
   const updates = [];
 
   for (const member of members) {
+    if (member.受付 === '欠席') continue; // 欠席者は一括操作から除外
     member.受付         = value;
     member.最終更新日時 = now;
     await idbPut(STORE_PARTICIPANTS, member);
@@ -1255,7 +1301,6 @@ async function checkinAll(famId, members, value) {
 
   if (updates.length === 0) { showToast('対象者がいません', 'info'); return; }
 
-  // カード全体を再描画
   const card = document.querySelector('.family-section[data-fam-id="' + famId + '"]');
   if (card) {
     const latest = await idbGetAll(STORE_PARTICIPANTS);
@@ -1316,7 +1361,7 @@ async function flushQueue() {
       }
       updateQueueBadge();
       showToast(queue.length + '件を同期しました', 'success');
-      await fetchAllData(true); // サイレントで再取得
+      await fetchAllData(true);
     }
   } catch (e) { /* 次回リトライ */ }
   finally { isSyncing = false; }
@@ -1342,6 +1387,8 @@ async function showQueueModal() {
       const person = all.find(p => p.個人ID === item.個人ID);
       const name   = person ? person.氏名 : item.個人ID;
       const time   = item.queuedAt ? new Date(item.queuedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '';
+      const valClass = item.value === '済' ? 'done' : item.value === '欠席' ? 'absent' : 'undone';
+      const valLabel = item.value === '済' ? '受付済' : item.value === '欠席' ? '欠席' : '取消';
       const el = document.createElement('div');
       el.className = 'queue-item';
       el.innerHTML =
@@ -1349,7 +1396,7 @@ async function showQueueModal() {
           '<div class="queue-item-name">' + name + '</div>' +
           '<div class="queue-item-meta">' + item.個人ID + (item.体温 ? ' ／ 体温 ' + item.体温 + '℃' : '') + (time ? ' ／ ' + time : '') + '</div>' +
         '</div>' +
-        '<span class="queue-item-value ' + (item.value === '済' ? 'done' : 'undone') + '">' + (item.value === '済' ? '受付済' : '取消') + '</span>';
+        '<span class="queue-item-value ' + valClass + '">' + valLabel + '</span>';
       list.appendChild(el);
     });
   }
@@ -1359,6 +1406,7 @@ async function showQueueModal() {
 
 // ============================================================
 //  統計
+//  【v2修正】欠席者をtotalから除外（来場予定者のみカウント）
 // ============================================================
 function updateStats(stats) {
   if (!stats) return;
@@ -1369,22 +1417,31 @@ function updateStats(stats) {
 }
 
 async function updateLocalStats() {
-  const all   = await idbGetAll(STORE_PARTICIPANTS);
-  const stats = { total: all.length, done: all.filter(p => p.受付 === '済').length };
+  const all        = await idbGetAll(STORE_PARTICIPANTS);
+  const nonAbsent  = all.filter(p => p.受付 !== '欠席');
+  const stats = { total: nonAbsent.length, done: nonAbsent.filter(p => p.受付 === '済').length };
   updateStats(stats);
 }
 
 // ============================================================
 //  メンバー追加フォーム
+//  【v2修正】フォーム表示中は isUserActive = true にして
+//           ポーリングによる画面書き換えを防ぐ
 // ============================================================
 function showAddForm() {
   showAddMemberForm(null, null);
 }
 
 function showAddMemberForm(famId, refMember) {
-  // 既存フォームがあれば閉じる
   const existing = document.getElementById('add-form-el');
-  if (existing) { existing.remove(); return; }
+  if (existing) {
+    existing.remove();
+    isUserActive = false; // フォームを閉じたのでフラグ解除
+    return;
+  }
+
+  // フォームを開いている間はポーリングによるリフレッシュを防ぐ
+  isUserActive = true;
 
   const isNewFamily = !famId;
   const newPid = 'P-' + Date.now().toString().slice(-5);
@@ -1398,12 +1455,10 @@ function showAddMemberForm(famId, refMember) {
     ? '➕ 新規家族を追加'
     : '➕ ' + famId + ' にメンバー追加';
 
-  // 事業所・電話番号・参加形態は既存メンバーから引き継ぎ
   const officeVal = refMember ? (refMember.事業所   || '') : '';
   const telVal    = refMember ? (refMember.電話番号 || '') : '';
   const typeVal   = refMember ? (refMember.参加形態 || '家族同伴') : '家族同伴';
 
-  // 「対象イベント」チェックボックスは削除（1イベントに集約のため全員対象）
   form.innerHTML =
     '<h3>' + title + '</h3>' +
     '<input type="hidden" id="new-famid" value="' + newFid + '">' +
@@ -1441,8 +1496,11 @@ function showAddMemberForm(famId, refMember) {
   container.insertBefore(form, container.firstChild);
   container.scrollTo({ top: 0, behavior: 'smooth' });
 
-  document.getElementById('cancel-add').onclick = () => form.remove();
-  document.getElementById('submit-add').onclick  = submitAddForm;
+  document.getElementById('cancel-add').onclick = () => {
+    form.remove();
+    isUserActive = false; // フォームを閉じたのでフラグ解除
+  };
+  document.getElementById('submit-add').onclick = submitAddForm;
 }
 
 async function submitAddForm() {
@@ -1452,16 +1510,16 @@ async function submitAddForm() {
   if (!famId || !pid || !name) { showToast('氏名は必須です', 'error'); return; }
 
   const rec = {
-    家族ID:   famId,
-    個人ID:   pid,
-    氏名:     name,
-    年齢:     document.getElementById('new-age').value    || '',
-    区分:     document.getElementById('new-kubun').value,
-    事業所:   document.getElementById('new-office').value.trim(),
-    電話番号: document.getElementById('new-tel').value.trim(),
-    参加形態: document.getElementById('new-type').value,
-    受付:     '未',
-    体温:     '',
+    家族ID:      famId,
+    個人ID:      pid,
+    氏名:        name,
+    年齢:        document.getElementById('new-age').value    || '',
+    区分:        document.getElementById('new-kubun').value,
+    事業所:      document.getElementById('new-office').value.trim(),
+    電話番号:    document.getElementById('new-tel').value.trim(),
+    参加形態:    document.getElementById('new-type').value,
+    受付:        '未',
+    体温:        '',
     最終更新日時: ''
   };
 
@@ -1480,6 +1538,7 @@ async function submitAddForm() {
   }
 
   document.getElementById('add-form-el')?.remove();
+  isUserActive = false; // フォームを閉じたのでフラグ解除
   await buildOfficeFilter();
   await updateLocalStats();
   await search();
@@ -1541,7 +1600,6 @@ async function openCameraView() {
   qrInterval = { stop: () => { scanning = false; } };
 
   if (hasBarcodeDetector) {
-    // ---- BarcodeDetector API（Android Chrome推奨） ----
     let detector;
     try {
       detector = new BarcodeDetector({ formats: ['qr_code'] });
@@ -1581,7 +1639,6 @@ async function openCameraView() {
     showToast('📷 QRコードをカメラに向けてください', 'info');
 
   } else {
-    // ---- jsQRフォールバック（BarcodeDetector非対応環境用） ----
     if (!navigator.onLine) {
       showToast('オフライン時のQR読取にはAndroid Chromeをご使用ください', 'error');
       closeCameraView(); return;
@@ -1724,7 +1781,6 @@ function startPolling() {
 //  イベントリスナー
 // ============================================================
 function bindEvents() {
-  // 氏名入力：Enterキーまたは入力が止まったら検索
   let searchTimer = null;
   document.getElementById('search-name').addEventListener('input', () => {
     clearTimeout(searchTimer);
@@ -1734,24 +1790,20 @@ function bindEvents() {
     if (e.key === 'Enter') { clearTimeout(searchTimer); search(); }
   });
 
-  // 事業所プルダウン
   document.getElementById('filter-office').addEventListener('change', () => search());
   document.getElementById('filter-office').addEventListener('click', () => {
     if (document.getElementById('filter-office').value === '') search();
   });
 
-  // フィルタチェックボックス
   document.getElementById('filter-undone').addEventListener('change', () => search());
   document.getElementById('filter-child-only').addEventListener('change', () => search());
+  document.getElementById('filter-absent').addEventListener('change', () => search()); // 欠席フィルター
 
-  // QRカメラ
   document.getElementById('open-camera').addEventListener('click', openCameraView);
   document.getElementById('close-camera').addEventListener('click', closeCameraView);
 
-  // 新規追加
   document.getElementById('add-btn').addEventListener('click', showAddForm);
 
-  // 設定パネル
   document.getElementById('open-settings').addEventListener('click', () => {
     document.getElementById('settings-panel').classList.add('active');
   });
@@ -1775,7 +1827,6 @@ function bindEvents() {
     );
   });
 
-  // キューバッジ → キューパネル表示
   document.getElementById('queue-badge').addEventListener('click', showQueueModal);
   document.getElementById('close-queue').addEventListener('click', () => {
     document.getElementById('queue-panel').classList.remove('active');
@@ -1784,16 +1835,13 @@ function bindEvents() {
     if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
   });
 
-  // モーダル
   document.getElementById('modal-cancel').addEventListener('click', () => {
     document.getElementById('confirm-modal').classList.remove('active');
   });
 
-  // オンライン/オフライン
   window.addEventListener('online',  updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
 
-  // 設定パネル背景タップで閉じる
   document.getElementById('settings-panel').addEventListener('click', e => {
     if (e.target === e.currentTarget) e.currentTarget.classList.remove('active');
   });
@@ -1806,7 +1854,6 @@ async function init() {
   db = await openDB();
   await loadSettings();
 
-  // テーマ復元
   const savedTheme = await getMeta('theme') || 'dark';
   setTheme(savedTheme);
 
